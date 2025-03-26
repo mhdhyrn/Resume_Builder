@@ -1,0 +1,10 @@
+@use '../../themes' as *;
+@use 'sass:map';
+
+$config-themes: () !default;
+
+@function getThemes() {
+  $config-themes: map.merge($themes, $config-themes);
+
+  @return $config-themes;
+}

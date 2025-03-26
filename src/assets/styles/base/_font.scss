@@ -1,0 +1,29 @@
+$font-url: '@/assets/fonts';
+
+@font-face {
+  font-family: 'peyda';
+  src: url('#{$font-url}/peyda/peyda-regular.ttf'), format('ttf');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: peyda;
+  src: url('#{$font-url}/peyda/peyda-medium.ttf'), format('ttf');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: peyda;
+  src: url('#{$font-url}/peyda/peyda-semi-bold.ttf'), format('ttf');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: peyda;
+  src: url('#{$font-url}/peyda/peyda-bold.ttf'), format('ttf');
+  font-weight: 900;
+  font-style: normal;
+}

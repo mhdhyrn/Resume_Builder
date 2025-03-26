@@ -1,0 +1,9 @@
+@use '../variables/colors' as *;
+@use 'sass:map';
+
+$config-colors: () !default;
+
+@function getColors() {
+  $config-colors: map.merge($colors, $config-colors);
+  @return $config-colors;
+}
