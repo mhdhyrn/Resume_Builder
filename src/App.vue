@@ -1,7 +1,11 @@
-<script setup></script>
+<script setup>
+import Layout from '@/layouts/layout.vue';
+</script>
 
 <template>
-  <RouterView />
+  <Layout>
+    <RouterView />
+  </Layout>
 </template>
 
 <style lang="scss" scoped></style>

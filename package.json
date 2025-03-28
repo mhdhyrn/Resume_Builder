@@ -29,6 +29,7 @@
     "npm-run-all2": "^7.0.2",
     "oxlint": "^0.15.13",
     "prettier": "3.5.3",
+    "unplugin-auto-import": "^19.1.2",
     "vite": "^6.2.1",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vite-svg-loader": "^5.1.0"
