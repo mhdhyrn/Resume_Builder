@@ -1,0 +1,13 @@
+@use '../abstracts' as *;
+
+* {
+  font-family: 'peyda';
+  word-spacing: 1.5px;
+  @include typography('sm', 'light');
+  @include breakpoint(sm) {
+    @include typography('md');
+  }
+  @include breakpoint(md) {
+    @include typography('md', 'medium');
+  }
+}

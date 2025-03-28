@@ -1,0 +1,20 @@
+@use 'sass:map';
+@use 'sass:list';
+@use '../configs/colors' as *;
+
+@function colorByShade($color: '', $shade: '') {
+  $colors: getColors();
+
+  @if not(map.has-key($colors, $color)) {
+    @error "Invalid color: #{$color}.";
+  }
+  $color-list: map.get($colors, $color);
+  @if $shade == '' and list.length($color-list) ==1 {
+    @return $color-list;
+  } @else {
+    @if not(map.has-key($color-list, $shade)) {
+      @error "Invalid shade: #{$shade}.";
+    }
+    @return map.get($color-list, $shade);
+  }
+}

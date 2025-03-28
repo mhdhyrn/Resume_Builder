@@ -1,0 +1,15 @@
+@use '../abstracts/variables/colors';
+@use '../themes';
+@use '../abstracts/configs/themes' as *;
+
+$themes: getThemes();
+
+:root {
+  @each $theme, $colors in $themes {
+    &[theme='#{$theme}'] {
+      @each $key, $value in $colors {
+        --#{$key}: #{$value};
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+@use 'sass:map';
+@use '../variables/typography' as *;
+
+@function font-size($size) {
+  @if map.has-key($font-sizes, $size) {
+    @return map.get($font-sizes, $size);
+  } @else {
+    @error "Invalid size: #{$size}.";
+  }
+}
+
+@function font-weight($weight) {
+  @if map.has-key($font-weights, $weight) {
+    @return map.get($font-weights, $weight);
+  } @else {
+    @error "Invalid weight: #{$size}.";
+  }
+}

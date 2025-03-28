@@ -1,0 +1,7 @@
+@function remify($px-value) {
+  @if type-of($px-value) != number {
+    @error "Invalid type: #{$px-value}.";
+  }
+
+  @return calc($px-value / 16) * 1rem;
+}

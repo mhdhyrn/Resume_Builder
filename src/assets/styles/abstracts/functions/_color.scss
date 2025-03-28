@@ -1,0 +1,22 @@
+@use 'sass:map';
+@use '../configs/themes' as *;
+
+@function color($color: '', $theme: '', $is-hex-color: false) {
+  @if not($is-hex-color) {
+    @return var(--#{$color});
+  }
+
+  $themes: getThemes();
+
+  @if not(map.has-key($themes, $theme)) {
+    @error "Invalid theme: #{$theme}.";
+  }
+
+  $theme-list: map.get($themes, $theme);
+
+  @if not(map.has-key($theme-list, $color)) {
+    @error "Invalid color: #{$color}.";
+  }
+
+  @return map.get($theme-list, $color);
+}
