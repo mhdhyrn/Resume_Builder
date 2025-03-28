@@ -1,0 +1,5 @@
+@use '../functions/spacing' as *;
+
+@mixin spacing($property, $size) {
+  #{$property}: space($size);
+}

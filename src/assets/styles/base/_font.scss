@@ -3,28 +3,42 @@ $font-url: '@/assets/fonts';
 @font-face {
   font-family: 'peyda';
   src: url('#{$font-url}/peyda/peyda-thin.woff2'), format('woff2');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'peyda';
+  src: url('#{$font-url}/peyda/peyda-extra-light.woff2'), format('woff2');
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'peyda';
-  src: url('#{$font-url}/peyda/peyda-medium.woff2'), format('woff2');
+  src: url('#{$font-url}/peyda/peyda-light.woff2'), format('woff2');
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'peyda';
-  src: url('#{$font-url}/peyda/peyda-semi-bold.woff2'), format('woff2');
+  src: url('#{$font-url}/peyda/peyda-medium.woff2'), format('woff2');
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'peyda';
-  src: url('#{$font-url}/peyda/peyda-bold.woff2'), format('woff2');
+  src: url('#{$font-url}/peyda/peyda-semi-bold.woff2'), format('woff2');
   font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'peyda';
+  src: url('#{$font-url}/peyda/peyda-bold.woff2'), format('woff2');
+  font-weight: 800;
   font-style: normal;
 }
 

@@ -1,0 +1,12 @@
+@use 'sass:map';
+@use '../variables/radius' as *;
+
+@function radius($size) {
+  $radius-value: map.get($border-radius, $size);
+
+  @if $radius-value {
+    @return $radius-value;
+  } @else {
+    @error "Invalid size: #{$size}.";
+  }
+}

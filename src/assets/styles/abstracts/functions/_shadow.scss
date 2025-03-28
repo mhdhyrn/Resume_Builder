@@ -1,0 +1,10 @@
+@use 'sass:map';
+@use '../variables/shadows' as *;
+
+@function shadow($size) {
+  @if map.has-key($shadows, $size) {
+    @return map.get($shadows, $size);
+  } @else {
+    @error "Invalid size: #{$size}.";
+  }
+}

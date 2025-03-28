@@ -1,0 +1,10 @@
+@use 'sass:map';
+@use '../variables/z-index' as *;
+
+@function z-index($level) {
+  @if not(map-has-key($z-index, $level)) {
+    @error "Invalid level: #{$level}.";
+  }
+
+  @return map.get($z-index, $level);
+}

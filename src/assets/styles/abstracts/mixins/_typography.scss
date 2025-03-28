@@ -1,0 +1,10 @@
+@use 'sass:map';
+@use '../functions/typography' as *;
+
+@mixin typography($size, $weight: null) {
+  font-size: font-size($size);
+
+  @if $weight {
+    font-weight: font-weight($weight);
+  }
+}

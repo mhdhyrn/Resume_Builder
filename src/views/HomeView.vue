@@ -1,13 +1,10 @@
 <script setup></script>
 
 <template>
-  <main class="home">به صفحه ی اصلی خوش آمدید</main>
+  <main class="home">سلام</main>
 </template>
 
 <style lang="scss" scoped>
-// @use '@/assets/styles/abstracts' as *;
-
 .home {
-  // color: color(primary);
 }
 </style>

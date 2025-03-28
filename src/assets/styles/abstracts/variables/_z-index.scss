@@ -1,0 +1,15 @@
+$z-index: (
+  hide: -1,
+  base: 0,
+  masked: 100,
+  mask: 200,
+  sticky: 300,
+  fixed: 400,
+  overlay: 500,
+  loader: 600,
+  modal: 700,
+  dropdown: 800,
+  notification: 900,
+  tooltip: 950,
+  above-all: 1000000,
+);

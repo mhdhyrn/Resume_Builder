@@ -1,5 +1,5 @@
-@use '../configs/themes' as *;
 @use 'sass:map';
+@use '../configs/themes' as *;
 
 @function color($color: '', $theme: '', $is-hex-color: false) {
   @if not($is-hex-color) {

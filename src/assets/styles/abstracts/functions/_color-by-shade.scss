@@ -1,6 +1,6 @@
-@use '../configs/colors' as *;
 @use 'sass:map';
 @use 'sass:list';
+@use '../configs/colors' as *;
 
 @function colorByShade($color: '', $shade: '') {
   $colors: getColors();

@@ -1,0 +1,7 @@
+@mixin theme-scope($theme, $scope: &) {
+  @at-root [theme='#{$theme}'] {
+    #{$scope} {
+      @content;
+    }
+  }
+}
