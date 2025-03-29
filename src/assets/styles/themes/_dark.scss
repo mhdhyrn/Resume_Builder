@@ -2,8 +2,8 @@
 
 $dark: (
   //primary
-  primary: colorByShade(primary, 80),
-  on-primary: colorByShade(primary, 20),
+  primary: colorByShade(primary, 40),
+  on-primary: colorByShade(primary, 05),
   primary-container: colorByShade(primary, 10),
   on-primary-container: colorByShade(primary, 90),
   primary-fixed: colorByShade(primary, 90),
@@ -13,7 +13,7 @@ $dark: (
   inverse-primary: colorByShade(primary, 40),
   inverse-on-primary: colorByShade(primary, 100),
   //secondary
-  secondary: colorByShade(secondary, 80),
+  secondary: colorByShade(secondary, 60),
   on-secondary: colorByShade(secondary, 20),
   secondary-container: colorByShade(secondary, 20),
   on-secondary-container: colorByShade(secondary, 90),

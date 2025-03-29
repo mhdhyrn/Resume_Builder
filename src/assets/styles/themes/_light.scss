@@ -2,8 +2,8 @@
 
 $light: (
   //primary
-  primary: colorByShade(primary, 40),
-  on-primary: colorByShade(pure-white),
+  primary: colorByShade(primary, 30),
+  on-primary: colorByShade(primary, 95),
   primary-container: colorByShade(primary, 95),
   on-primary-container: colorByShade(primary, 30),
   primary-fixed: colorByShade(primary, 90),
@@ -53,7 +53,7 @@ $light: (
   scrim: colorByShade(neutral, 00),
   surface-tint: colorByShade(primary, 90),
   //success
-  success: colorByShade(success, 40),
+  success: colorByShade(success, 50),
   on-success: colorByShade(pure-white),
   success-container: colorByShade(success, 90),
   on-success-container: colorByShade(success, 10),
@@ -68,7 +68,7 @@ $light: (
   info-container: colorByShade(info, 90),
   on-info-container: colorByShade(info, 10),
   //warning
-  warning: colorByShade(warning, 40),
+  warning: colorByShade(warning, 70),
   on-warning: colorByShade(pure-white),
   warning-container: colorByShade(warning, 90),
   on-warning-container: colorByShade(warning, 10),
