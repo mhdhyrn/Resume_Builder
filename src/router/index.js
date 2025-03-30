@@ -5,6 +5,7 @@ const routes = [
   {
     path: authRoutes.ROOT_PATH,
     name: authRoutes.ROOT_NAME,
+    redirect: { name: authRoutes.LOGIN_NAME },
     children: [
       {
         path: authRoutes.LOGIN_PATH,

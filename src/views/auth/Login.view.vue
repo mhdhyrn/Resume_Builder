@@ -1,14 +1,10 @@
 <script setup></script>
 
 <template>
-  <div class="login">
-    salam
-  </div>
+  <div class="login"></div>
 </template>
 
 <style lang="scss" scoped>
 .login {
-  background-color: color(surface);
-  height: 100vh;
 }
 </style>
