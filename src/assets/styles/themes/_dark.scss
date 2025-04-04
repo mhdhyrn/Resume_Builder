@@ -3,7 +3,7 @@
 $dark: (
   //primary
   primary: colorByShade(primary, 40),
-  on-primary: colorByShade(primary, 05),
+  on-primary: colorByShade(primary, 00),
   primary-container: colorByShade(primary, 10),
   on-primary-container: colorByShade(primary, 90),
   primary-fixed: colorByShade(primary, 90),
@@ -58,7 +58,7 @@ $dark: (
   success-container: colorByShade(success, 30),
   on-success-container: colorByShade(success, 90),
   //error
-  error: colorByShade(error, 80),
+  error: colorByShade(error, 60),
   on-error: colorByShade(error, 20),
   error-container: colorByShade(error, 30),
   on-error-container: colorByShade(error, 90),

@@ -1,0 +1,57 @@
+@use '../abstracts' as *;
+
+$color-list: primary, secondary, tertiary, info, success, warning, error, surface-bright;
+$size-list: (
+  3x-small: remify(16),
+  2x-small: remify(20),
+  x-small: remify(24),
+  small: remify(28),
+  medium: remify(32),
+  large: remify(40),
+  x-large: remify(48),
+  2x-large: remify(56),
+  3x-large: remify(64)
+);
+
+$rounded-shapes: (
+  none: 0,
+  small: radius(sm),
+  medium: radius(md),
+  large: radius(lg),
+  x-large: radius(xl),
+  2x-large: radius(2xl),
+  pill: 360px,
+);
+
+.button {
+  @each $size, $amount in $size-list {
+    &--#{$size} {
+      --btn-height: #{$amount};
+    }
+  }
+
+  @each $shape, $amount in $rounded-shapes {
+    &--rounded-#{$shape} {
+      --btn-rounded: #{$amount};
+    }
+  }
+
+  @each $color in $color-list {
+    &--filled-#{$color} {
+      --btn-bg-color: var(--#{$color});
+      --btn-text-color: var(--on-#{$color});
+    }
+  }
+
+  @each $color in $color-list {
+    &--text-#{$color} {
+      --btn-text-color: var(--#{$color});
+    }
+  }
+
+  @each $color in $color-list {
+    &--outline-#{$color} {
+      --btn-text-color: var(--#{$color});
+    }
+  }
+}

@@ -11,7 +11,7 @@ export default defineConfig({
     vueDevTools(),
     svgLoader(),
     AutoImport({
-      imports: ['vue', 'vue-router', 'pinia'],
+      imports: ['vue', 'vue-router', 'pinia', 'vee-validate'],
       dirs: [],
       vueTemplate: true,
       eslintrc: {
