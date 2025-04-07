@@ -62,6 +62,7 @@ const signupButtonConfig = reactive({
 
   &__title {
     color: color(on-surface);
+    margin-bottom: space(10);
     @include typography('2xl', 'bold');
   }
 

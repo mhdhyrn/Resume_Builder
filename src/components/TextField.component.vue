@@ -69,6 +69,7 @@ const { value: fieldValue, errorMessage } = useField(props.name, props.rules, {
   syncVModel: true,
 });
 
+const input = ref();
 const showPassword = ref(false);
 const isPassword = computed(() => props.type === 'password');
 const computedType = computed(() => {
@@ -82,8 +83,13 @@ const passwordIcon = computed(() => {
   return showPassword.value ? 'eye' : 'eye-slash';
 });
 
-const togglePasswordVisibility = () => {
+const togglePasswordVisibility = async () => {
   showPassword.value = !showPassword.value;
+  await nextTick();
+  input.value.focus();
+  const length = input.value.value.length;
+
+  input.value.setSelectionRange(length, length);
 };
 
 watch(
@@ -105,6 +111,7 @@ watch(
           {{ label }}
         </label>
         <input
+          ref="input"
           :id="name"
           v-model="fieldValue"
           :type="computedType"
@@ -174,6 +181,10 @@ watch(
     border-color: color(primary);
   }
 
+  &:focus-within:has(.error) &__container {
+    border-color: color(error);
+  }
+
   &__field {
     width: 100%;
     border: none;
@@ -192,13 +203,13 @@ watch(
 
   &__hint {
     color: color(outline);
-    @include typography('sm', 'light');
+    @include typography('sm', 'medium');
   }
 
   &__error {
     height: remify(25);
     color: color(error);
-    @include typography('sm', 'light');
+    @include typography('sm', 'medium');
   }
 
   &__toggle-password {
@@ -218,6 +229,10 @@ watch(
     &--password {
       color: color(outline);
     }
+  }
+
+  &--error:focus-within &__container {
+    border-color: color(error);
   }
 
   &--error &__container {

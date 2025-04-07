@@ -8,16 +8,16 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
         <img src="@/assets/images/login-image.png" class="main__image" alt="login image" />
       </div>
       <div class="main__form">
-        <div class="main__logo--header logo">
-          <Logo class="logo__logo" />
-          <span class="logo__logo-text">روم زومه</span>
+        <div class="main__logo--header logo-container">
+          <Logo class="logo-container__logo" />
+          <span class="logo-container__logo-text">روم زومه</span>
         </div>
         <Transition name="fade" mode="out-in">
           <slot :key="$route.path" />
         </Transition>
-        <div class="main__logo--footer logo">
-          <Logo class="logo__logo" />
-          <span class="logo__logo-text">روم زومه</span>
+        <div class="main__logo--footer logo-container">
+          <Logo class="logo-container__logo" />
+          <span class="logo-container__logo-text">روم زومه</span>
         </div>
       </div>
     </div>
@@ -36,7 +36,7 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
   }
 }
 
-.logo {
+.logo-container {
   width: 100%;
   @include flex($align: center, $justify: center, $gap: space(2));
 
@@ -70,6 +70,7 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
     width: remify(700);
     box-shadow: shadow(normal);
     @include flex($direction: row, $gap: space(2));
+    padding: space(5);
   }
 
   @include breakpoint(lg) {
@@ -87,8 +88,8 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
       height: 100%;
       width: 50%;
       background-color: color(surface-container-low);
+      border-radius: radius(lg);
       border-top-left-radius: radius(pill);
-      border-bottom-right-radius: radius(pill);
       padding: space(5);
       @include flex($justify: center, $align: center);
     }
@@ -109,7 +110,7 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
     @include flex($direction: column, $justify: space-between, $align: center);
 
     @include breakpoint(md) {
-      padding: space(2) space(10);
+      padding: 0 space(10);
     }
 
     @include breakpoint(lg) {
@@ -119,7 +120,7 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
 
   &__logo {
     &--header {
-      padding-top: space(5);
+      padding-top: space(10);
       @include breakpoint(md) {
         display: none;
       }
