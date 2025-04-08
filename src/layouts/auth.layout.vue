@@ -1,5 +1,5 @@
 <script setup>
-import Logo from '@/assets/images/logo/roomzoome-logo.svg';
+import BaseLogo from '@/components/BaseLogo.component.vue';
 </script>
 <template>
   <main class="auth-layout">
@@ -8,17 +8,11 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
         <img src="@/assets/images/login-image.png" class="main__image" alt="login image" />
       </div>
       <div class="main__form">
-        <div class="main__logo--header logo-container">
-          <Logo class="logo-container__logo" />
-          <span class="logo-container__logo-text">روم زومه</span>
-        </div>
+        <BaseLogo class="main__logo--header" />
         <Transition name="fade" mode="out-in">
           <slot :key="$route.path" />
         </Transition>
-        <div class="main__logo--footer logo-container">
-          <Logo class="logo-container__logo" />
-          <span class="logo-container__logo-text">روم زومه</span>
-        </div>
+        <BaseLogo class="main__logo--footer" />
       </div>
     </div>
   </main>
@@ -33,21 +27,6 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
 
   @include breakpoint(sm) {
     padding: space(5);
-  }
-}
-
-.logo-container {
-  width: 100%;
-  @include flex($align: center, $justify: center, $gap: space(2));
-
-  &__logo {
-    width: remify(40);
-    color: color(primary);
-  }
-
-  &__logo-text {
-    color: color(primary);
-    @include typography('xl', 'extra-bold');
   }
 }
 
@@ -120,12 +99,14 @@ import Logo from '@/assets/images/logo/roomzoome-logo.svg';
 
   &__logo {
     &--header {
+      width: remify(120);
       padding-top: space(10);
       @include breakpoint(md) {
         display: none;
       }
     }
     &--footer {
+      width: remify(120);
       padding-bottom: space(5);
       display: none;
       @include breakpoint(md) {

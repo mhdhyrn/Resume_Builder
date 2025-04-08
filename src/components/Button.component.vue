@@ -153,5 +153,10 @@ const classModifiers = useClassModifier('button', classConditions);
     background-color: color(disabled-soft);
     color: color(disabled-strong);
   }
+
+  &--outline {
+    background-color: transparent;
+    border: 2px solid var(--btn-text-color);
+  }
 }
 </style>

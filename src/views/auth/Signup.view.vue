@@ -80,7 +80,7 @@ const signupButtonConfig = reactive({
 
   &__field-container {
     width: 100%;
-    @include flex($direction: column, $justify: center, $align: center, $gap: space(2));
+    @include flex($direction: column, $justify: center, $align: center);
   }
 
   &__field {

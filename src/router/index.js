@@ -1,7 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { authRoutes } from '@/constants/router';
+import { authRoutes, homeRoutes } from '@/constants/router';
 
 const routes = [
+  {
+    path: homeRoutes.HOME_PATH,
+    name: homeRoutes.HOME_NAME,
+    component: homeRoutes.HOME_COMPONENT,
+  },
   {
     path: authRoutes.ROOT_PATH,
     name: authRoutes.ROOT_NAME,

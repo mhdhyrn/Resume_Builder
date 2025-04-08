@@ -9,7 +9,7 @@ const router = useRouter();
 const fieldsConfig = reactive({
   username: {
     modelValue: '',
-    label: 'نام کاربری',
+    label: 'شماره موبایل',
     rules: 'required',
   },
   password: {
@@ -74,7 +74,7 @@ const signupButtonConfig = reactive({
 
   &__field-container {
     width: 100%;
-    @include flex($direction: column, $justify: center, $align: center, $gap: space(2));
+    @include flex($direction: column, $justify: center, $align: center);
   }
 
   &__field {
