@@ -1,82 +1,77 @@
-<script setup></script>
-<template>
-  <section class="home">
-    <div class="home__content">
-      <h1 class="home__title">رزومه حرفه‌ای خودتو سریع بساز</h1>
-      <p class="home__subtitle">
-        با رزومه‌ساز آنلاین ما، تنها در چند دقیقه یک رزومه جذاب و حرفه‌ای بساز.
-      </p>
-      <div class="home__actions">
-        <button class="home__btn home__btn--primary">ساخت رزومه</button>
-        <button class="home__btn home__btn--secondary">دیدن نمونه‌ها</button>
-      </div>
-    </div>
+<script setup>
+import Button from '@/components/Button.component.vue';
 
-    <div class="home__image-wrapper">
-      <img src="" alt="Illustration of a resume builder" class="home__image" />
-    </div>
-  </section>
+const headerButtonConfigs = reactive([
+  {
+    text: 'ساخت رزومه',
+    // TODO: set handler
+  },
+  {
+    text: 'دیدن نمونه‌ها',
+    variant: 'outline',
+    color: 'secondary',
+    // TODO: set handler
+  },
+]);
+</script>
+<template>
+  <div class="home">
+    <header class="home__header header">
+      <div class="header__content">
+        <h1 class="header__title">رزومه حرفه‌ای خودتو سریع بساز</h1>
+        <p class="header__subtitle">
+          با رزومه‌ساز آنلاین ما، تنها در چند دقیقه یک رزومه جذاب و حرفه‌ای بساز.
+        </p>
+        <div class="header__btn-container">
+          <Button
+            v-for="(item, index) in headerButtonConfigs"
+            :key="index"
+            v-bind="item"
+            class="header__btn"
+          />
+        </div>
+      </div>
+      <div class="header__image-wrapper">
+        <img src="#" alt="تصویر هدر" class="header__image" />
+      </div>
+    </header>
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .home {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4rem 2rem;
-  background: linear-gradient(135deg, #f5f7fa, #eef1f6);
+  min-height: 100dvh;
+  padding: space(3) 0;
+  background-color: color(surface);
+  color: color(on-surface);
+
+  @include breakpoint(md) {
+    padding: space(5);
+  }
+}
+
+.header {
+  padding: space(5) space(2);
+  @include flex($direction: row-reverse, $align: center, $justify: space-between);
 
   &__content {
     flex: 1;
-    padding: 2rem;
+    padding: space(2);
   }
 
   &__title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 1rem;
+    margin-bottom: space(2);
+    @include typography('xl', 'bold');
   }
 
   &__subtitle {
-    font-size: 1.2rem;
-    color: #7f8c8d;
-    margin-bottom: 2rem;
+    margin-bottom: space(2);
+    color: color(outline-variant);
+    @include typography('lg', 'medium');
   }
 
-  &__actions {
-    display: flex;
-    gap: 1rem;
-  }
-
-  &__btn {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-
-    &--primary {
-      background-color: #4a90e2;
-      color: #fff;
-
-      &:hover {
-        background-color: #357ab8;
-      }
-    }
-
-    &--secondary {
-      background-color: transparent;
-      border: 2px solid #4a90e2;
-      color: #4a90e2;
-
-      &:hover {
-        background-color: #4a90e2;
-        color: #fff;
-      }
-    }
+  &__btn-container {
+    @include flex($justify: center, $wrap: wrap, $gap: space(2));
   }
 
   &__image-wrapper {
@@ -89,14 +84,10 @@
     height: auto;
   }
 
-  @media (max-width: 768px) {
+  @include breakpoint(md) {
     flex-direction: column-reverse;
     text-align: center;
-
-    &__actions {
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+    @include flex($direction: column-reverse);
   }
 }
 </style>
