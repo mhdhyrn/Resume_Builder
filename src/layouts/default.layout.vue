@@ -5,8 +5,15 @@ import TheHeader from '@/components/TheHeader.component.vue';
 <template>
   <main class="default-layout">
     <TheHeader />
-    <slot />
+    <div class="content">
+      <slot />
+    </div>
   </main>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.content {
+  padding-top: space(16);
+  min-height: 100dvh;
+}
+</style>

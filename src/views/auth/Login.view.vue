@@ -2,39 +2,53 @@
 import Button from '@/components/Button.component.vue';
 import TextField from '@/components/TextField.component.vue';
 import { useRouter } from 'vue-router';
+import { authStore } from '@/stores';
+import { usePromise } from '@/composables';
+import { toast } from '@/libs';
 
 const { meta: formMeta } = useForm();
 const router = useRouter();
 
 const fieldsConfig = reactive({
-  username: {
-    modelValue: '',
+  phoneNumber: {
+    // modelValue: '',
     label: 'شماره موبایل',
-    rules: 'required',
-  },
-  password: {
-    modelValue: '',
-    type: 'password',
-    label: 'گذرواژه',
-    rules: 'required',
+    rules: 'required|mobileNumber',
   },
 });
 const submitButtonConfig = reactive({
   text: 'ورود',
   isDisabled: computed(() => !formMeta.value.valid),
+  isLoading: computed(() => isLoginBtnLoading.value),
+  type: 'submit',
 });
 
-const signupButtonConfig = reactive({
-  variant: 'text',
-  text: 'ساخت حساب کاربری',
-  color: 'secondary',
-  handler: () => router.push({ name: 'Signup' }),
-});
+const test = ref('');
+
+const {
+  execute: verifyUser,
+  loading: isLoginBtnLoading,
+  data: response,
+} = usePromise(authStore.verifyUser);
+
+const formSubmission = () => {
+  // const payload = {
+  //   phoneNumber: fieldsConfig.phoneNumber.modelValue,
+  //   password: fieldsConfig.password.modelValue,
+  // };
+  // verifyUser(payload);
+  isLoginBtnLoading.value = true;
+  setTimeout(() => {
+    isLoginBtnLoading.value = false;
+    // authStore().userInfo.phoneNumber = fieldsConfig.phoneNumber.modelValue;
+    sessionStorage.setItem('phoneNumber', test.value);
+    router.push({ name: 'OTP' });
+  }, 300);
+};
 </script>
-
 <template>
   <div class="login">
-    <form class="login__form">
+    <form class="login__form" @submit.prevent="formSubmission">
       <h3 class="login__title">ورود به حساب کاربری</h3>
       <div class="login__field-container">
         <TextField
@@ -42,15 +56,12 @@ const signupButtonConfig = reactive({
           :key="index"
           :name="key"
           v-bind="filed"
+          v-model="test"
           class="login__field"
         />
       </div>
       <Button v-bind="submitButtonConfig" class="" />
     </form>
-    <p class="login__signup-text">
-      حساب کاربری ندارید؟
-      <Button v-bind="signupButtonConfig" class="login__signup-button" />
-    </p>
   </div>
 </template>
 
@@ -62,7 +73,7 @@ const signupButtonConfig = reactive({
 
   &__title {
     color: color(on-surface);
-    margin-bottom: space(10);
+    margin-bottom: space(2);
     @include typography('2xl', 'bold');
   }
 
@@ -79,18 +90,6 @@ const signupButtonConfig = reactive({
 
   &__field {
     width: 100%;
-  }
-
-  &__signup-text {
-    margin-bottom: space(4);
-    width: 100%;
-    color: color(on-surface);
-    @include typography('sm', 'light');
-    @include flex($justify: center, $align: center);
-  }
-
-  &__signup-button {
-    width: fit-content;
   }
 }
 </style>

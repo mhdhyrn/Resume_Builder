@@ -3,7 +3,7 @@ import Button from '@/components/Button.component.vue';
 
 const headerButtonConfigs = reactive([
   {
-    text: 'ساخت رزومه',
+    text: 'ساختن روزمه حرفه‌ای',
     // TODO: set handler
   },
   {
@@ -17,12 +17,15 @@ const headerButtonConfigs = reactive([
 <template>
   <div class="home">
     <header class="home__header header">
+      <div class="header__image-wrapper">
+        <img src="@/assets/images/home/header-image.png" alt="تصویر هدر" class="header__image" />
+      </div>
       <div class="header__content">
-        <h1 class="header__title">رزومه حرفه‌ای خودتو سریع بساز</h1>
-        <p class="header__subtitle">
-          با رزومه‌ساز آنلاین ما، تنها در چند دقیقه یک رزومه جذاب و حرفه‌ای بساز.
+        <h1 class="header__title">با روم زومه، همه‌ی نگاه‌ها روت زومه!</h1>
+        <p class="header__subtext">
+          در کمتر از 10 دقیقه رزومه‌ی حرفه‌ای خودت رو بساز و همه‌ی شرکت هارو جذب خودت کن
         </p>
-        <div class="header__btn-container">
+        <div v-if="!isUserLogin" class="header__btn-container">
           <Button
             v-for="(item, index) in headerButtonConfigs"
             :key="index"
@@ -31,9 +34,6 @@ const headerButtonConfigs = reactive([
           />
         </div>
       </div>
-      <div class="header__image-wrapper">
-        <img src="#" alt="تصویر هدر" class="header__image" />
-      </div>
     </header>
   </div>
 </template>
@@ -41,8 +41,7 @@ const headerButtonConfigs = reactive([
 <style lang="scss" scoped>
 .home {
   min-height: 100dvh;
-  padding: space(3) 0;
-  background-color: color(surface);
+  background-color: color(surface-container);
   color: color(on-surface);
 
   @include breakpoint(md) {
@@ -51,43 +50,67 @@ const headerButtonConfigs = reactive([
 }
 
 .header {
-  padding: space(5) space(2);
-  @include flex($direction: row-reverse, $align: center, $justify: space-between);
+  padding: 0 space(2);
+  @include flex($direction: column, $align: center, $justify: space-between);
 
   &__content {
     flex: 1;
     padding: space(2);
+    @include flex($direction: column, $justify: center, $align: center);
   }
 
   &__title {
+    text-align: center;
     margin-bottom: space(2);
-    @include typography('xl', 'bold');
+    @include typography('4xl', 'extra-bold');
   }
 
   &__subtitle {
+    text-align: center;
     margin-bottom: space(2);
-    color: color(outline-variant);
+    color: color(disabled-hard);
+    @include typography('2xl', 'bold');
+  }
+
+  &__subtext {
+    text-align: center;
+    margin-bottom: space(10);
+    color: color(outline);
     @include typography('lg', 'medium');
   }
 
   &__btn-container {
-    @include flex($justify: center, $wrap: wrap, $gap: space(2));
+    width: 100%;
+    @include flex($justify: center, $gap: space(2));
+  }
+
+  &__btn {
+    width: 45%;
+    @include breakpoint(lg) {
+      width: 25%;
+    }
   }
 
   &__image-wrapper {
-    flex: 1;
-    text-align: center;
+    width: 100%;
+
+    @include breakpoint(md) {
+      width: 65%;
+    }
+
+    @include breakpoint(lg) {
+      width: 55%;
+    }
   }
 
   &__image {
-    max-width: 100%;
+    width: 100%;
     height: auto;
   }
 
   @include breakpoint(md) {
-    flex-direction: column-reverse;
     text-align: center;
-    @include flex($direction: column-reverse);
+    @include flex($direction: row);
   }
 }
 </style>

@@ -15,7 +15,9 @@
   "dependencies": {
     "@vee-validate/i18n": "^4.15.0",
     "@vee-validate/rules": "^4.15.0",
+    "axios": "^1.8.4",
     "pinia": "^3.0.1",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "sass": "^1.86.0",
     "vee-validate": "^4.15.0",
     "vue": "^3.5.13",

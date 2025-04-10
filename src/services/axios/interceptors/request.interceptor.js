@@ -1,23 +1,18 @@
-import { SessionStorage } from '@shared/services';
-
-const sessionStorage = new SessionStorage();
-
 function validateResponse(response) {}
 
-const getItemFromSession = (key) => sessionStorage.get(key);
+const getItemFromSession = (key) => sessionStorage.getItem(key);
 
 const isAuthenticated = () => {
-  return !!getItemFromSession('access_token');
+  return !!sessionStorage.getItem('access-token');
 };
 
 const setHeaders = (config) => {
   config.headers = {
     ...config.headers,
     'Cache-Control': 'no-cache',
-    'gateway-system': getItemFromSession('gateway-system'),
   };
   if (isAuthenticated()) {
-    config.headers['gateway-token'] = getItemFromSession('access_token');
+    config.headers['token'] = sessionStorage.getItem('access-token');
   }
 };
 

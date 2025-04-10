@@ -2,7 +2,7 @@ import Vue3Toastify from 'vue3-toastify';
 
 const TOAST_CONFIG = {
   theme: 'colored',
-  position: 'bottom-right',
+  position: 'top-left',
   rtl: true,
   transition: 'slide',
   dangerouslyHTMLString: true,
@@ -10,7 +10,7 @@ const TOAST_CONFIG = {
   toastClassName: 'toast-custom-class',
   containerClassName: 'toast-container-custom-class',
   expandCustomProps: true,
-  icon: false,
+  icon: true,
   closeButton: false,
   hideProgressBar: true,
 };

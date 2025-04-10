@@ -1,9 +1,5 @@
-import { notify } from '@shared/plugins/toast';
-import dictionary from '../constants/dictionary.constant';
-import { SessionStorage } from '@shared/services';
-import axios from '@shared/services/axios';
-
-const sessionStorage = new SessionStorage();
+import { toast } from '@/libs';
+import axios from '../index';
 
 const retryStrategies = {
   exponential: (currentRetry, coefficient) => Math.pow(2, currentRetry) * coefficient,
@@ -19,13 +15,13 @@ class ResponseHandler {
     const isShowNotify = response.config?.showToast;
 
     if (isShowNotify && message) {
-      notify({ message, type: 'success' });
+      toast.success(message);
     }
 
     return {
       success: true,
       status: response.status,
-      data: response?.data?.data || response?.data,
+      data: response?.data,
       statusText: response.statusText,
     };
   }
@@ -35,7 +31,7 @@ class ErrorHandler {
   static handle(error) {
     const errorStatusCode = error.response?.status;
     const errorMetaCode = error.response?.data?.meta?.code;
-    const errorMessage = error.response?.data?.data?.message?.fa || dictionary[errorStatusCode];
+    const errorMessage = error.response?.data?.data?.message?.fa;
     const additionalInfos = error?.response?.data?.data?.additionalInfo;
     const isShowNotify = error.config?.showToast ?? true;
     const hasRetry = error.config?.retry;
@@ -45,14 +41,10 @@ class ErrorHandler {
     if (isShowNotify) {
       if (error.config?.showErrorDetails) {
         additionalInfos?.forEach(({ message, path }) => {
-          notify({
-            message,
-            type: 'error',
-            id: errorMetaCode + path,
-          });
+          toast.error(message);
         });
       } else {
-        notify({ message: errorMessage, type: 'error' });
+        toast.error(message);
       }
     }
 
@@ -78,7 +70,7 @@ class ErrorHandler {
 
     if (!errorMetaCode.includes(errorCode)) return;
 
-    notify({ message: 'درخواست شما منقضی شده است.' });
+    toast.error('درخواست شما منقضی شده است.');
     sessionStorage.clear('access_token');
   }
 
@@ -97,7 +89,7 @@ class ErrorHandler {
     }
 
     if (currentRetry < count) {
-      const strategy = retryStrategies[mode] || retryStrategies.exponential; // Fallback to default
+      const strategy = retryStrategies[mode] || retryStrategies.exponential;
       const delay = strategy(currentRetry, coefficient, delayFunction);
 
       console.info(`Retry attempt ${currentRetry} of ${count}. Retrying after ${delay} seconds.`);

@@ -8,9 +8,8 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const isSidebarOpen = ref(false);
-const userInfo = ref(JSON.parse(localStorage.getItem('userInfo')) || {});
-
-const isLoggedIn = computed(() => !!userInfo.value?.phoneNumber);
+const isUserLogin = ref(sessionStorage.getItem('isUserLogin'));
+const phoneNumber = ref(sessionStorage.getItem('phoneNumber'));
 
 const isMobile = ref(false);
 
@@ -25,11 +24,6 @@ const authButtonsConfig = reactive([
   {
     text: 'ورود',
     handler: () => router.push({ name: 'Login' }),
-  },
-  {
-    text: 'ثبت نام',
-    variant: 'outline',
-    handler: () => router.push({ name: 'Signup' }),
   },
 ]);
 
@@ -54,7 +48,7 @@ onMounted(() => {
         </li>
       </ul>
     </nav>
-    <div class="the-header__auth-btns-container" v-if="!isLoggedIn">
+    <div class="the-header__auth-btns-container" v-if="!isUserLogin">
       <Button
         v-for="(config, index) in authButtonsConfig"
         :key="index"
@@ -63,7 +57,8 @@ onMounted(() => {
       />
     </div>
     <div class="the-header__user-profile" v-else>
-      {{ userInfo.phoneNumber }}
+      <div class="the-header__user-image"></div>
+      <span class="the-header__user-phone-number">{{ phoneNumber }}</span>
     </div>
     <TheSidebar :items="navItems" :is-open="isSidebarOpen" @close="closeSidebar" />
   </header>
@@ -71,22 +66,31 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .the-header {
+  position: fixed;
+  top: 0;
+  right: 0;
   width: 100%;
   padding: space(3) space(4);
   background-color: color(surface);
-  box-shadow: shadow('normal');
+  box-shadow: shadow('low');
+  z-index: 200;
   @include flex($align: center, $justify: space-between);
 
   &__logo-menu-container {
-    @include flex($align: center, $justify: center, $gap: space(2));
+    width: 45%;
+    @include flex($align: center, $gap: space(2));
+
+    @include breakpoint(md) {
+      width: 20%;
+    }
+
+    @include breakpoint(lg) {
+      width: 15%;
+    }
   }
 
   &__logo {
     width: remify(120);
-
-    @include breakpoint(sm) {
-    }
-
     @include breakpoint(md) {
       width: remify(120);
     }
@@ -103,16 +107,27 @@ onMounted(() => {
 
   &__auth-btns-container,
   &__user-profile {
-    width: 45%;
+    width: 40%;
     @include flex($align: center, $justify: center, $gap: space(2));
 
     @include breakpoint(md) {
-      width: 25%;
+      width: 20%;
     }
 
     @include breakpoint(lg) {
       width: 15%;
     }
+  }
+
+  &__auth-btns {
+    width: remify(150);
+  }
+
+  &__user-image {
+    border-radius: radius(pill);
+    width: remify(40);
+    height: remify(40);
+    background-color: rgb(158, 158, 158);
   }
 
   &__menu-btn {

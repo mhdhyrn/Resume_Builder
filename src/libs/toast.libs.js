@@ -1,4 +1,4 @@
-import CustomToastComponent from '@/components/shared/custom-toast.component.vue';
+import CustomToastComponent from '@/components/ToastMessage.component.vue';
 import { toast } from 'vue3-toastify';
 
 const toastTypes = ['info', 'error', 'warning', 'success', 'loading', 'dark'];
@@ -8,8 +8,6 @@ const defaultOptions = {
 };
 
 const renderCustomToastComponent = (content, options = {}, type) => {
-  console.log(type);
-
   if (!toastTypes.includes(type)) {
     throw new Error(
       `Unsupported toast type: "${type}". Supported types are: ${toastTypes.join(', ')}`,
