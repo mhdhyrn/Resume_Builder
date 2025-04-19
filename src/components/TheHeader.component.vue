@@ -8,29 +8,14 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const isSidebarOpen = ref(false);
-const isUserLogin = ref(sessionStorage.getItem('isUserLogin'));
-const phoneNumber = ref(sessionStorage.getItem('phoneNumber'));
-
-const isMobile = ref(false);
-
-const handleResize = () => {
-  isMobile.value = window.innerWidth < 768;
-};
 
 const openSidebar = () => (isSidebarOpen.value = true);
 const closeSidebar = () => (isSidebarOpen.value = false);
 
-const authButtonsConfig = reactive([
-  {
-    text: 'ورود',
-    handler: () => router.push({ name: 'Login' }),
-  },
-]);
-
-onMounted(() => {
-  handleResize();
-  window.addEventListener('resize', handleResize);
-});
+const loginButtonConfig = {
+  text: 'ورود',
+  handler: () => router.push({ name: 'Login' }),
+};
 </script>
 
 <template>
@@ -41,25 +26,18 @@ onMounted(() => {
       </Button>
       <BaseLogo class="the-header__logo" />
     </div>
-    <nav class="the-header__nav" v-if="!isMobile">
+    <nav class="the-header__nav">
       <ul class="the-header__nav-container">
         <li v-for="item in navItems" :key="item.name">
           <RouterLink :to="item.href" class="the-header__nav-items">{{ item.name }}</RouterLink>
         </li>
       </ul>
     </nav>
-    <div class="the-header__auth-btns-container" v-if="!isUserLogin">
-      <Button
-        v-for="(config, index) in authButtonsConfig"
-        :key="index"
-        v-bind="config"
-        class="the-header__auth-btns"
-      />
-    </div>
-    <div class="the-header__user-profile" v-else>
+    <Button v-bind="loginButtonConfig" class="the-header__auth-btn" />
+    <!-- <div class="the-header__user-profile" v-else>
       <div class="the-header__user-image"></div>
       <span class="the-header__user-phone-number">{{ phoneNumber }}</span>
-    </div>
+    </div> -->
     <TheSidebar :items="navItems" :is-open="isSidebarOpen" @close="closeSidebar" />
   </header>
 </template>
@@ -76,23 +54,17 @@ onMounted(() => {
   z-index: 200;
   @include flex($align: center, $justify: space-between);
 
-  &__logo-menu-container {
-    width: 45%;
-    @include flex($align: center, $gap: space(2));
-
-    @include breakpoint(md) {
-      width: 20%;
-    }
-
-    @include breakpoint(lg) {
-      width: 15%;
-    }
-  }
-
   &__logo {
     width: remify(120);
     @include breakpoint(md) {
       width: remify(120);
+    }
+  }
+
+  &__nav {
+    display: none;
+    @include breakpoint(md) {
+      display: block;
     }
   }
 
@@ -105,22 +77,27 @@ onMounted(() => {
     color: color(on-surface);
   }
 
-  &__auth-btns-container,
+  &__logo-menu-container,
+  &__auth-btn,
   &__user-profile {
-    width: 40%;
-    @include flex($align: center, $justify: center, $gap: space(2));
+    width: remify(120);
 
     @include breakpoint(md) {
       width: 20%;
     }
 
     @include breakpoint(lg) {
-      width: 15%;
+      width: remify(150);
+    }
+
+    @include breakpoint(xl) {
+      width: remify(170);
     }
   }
 
-  &__auth-btns {
-    width: remify(150);
+  &__logo-menu-container {
+    width: remify(250);
+    @include flex($align: center, $gap: space(2));
   }
 
   &__user-image {

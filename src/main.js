@@ -3,7 +3,6 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import veeValidate from '@/plugins/vee-validate';
 import piniaPersistedstate from 'pinia-plugin-persistedstate';
-import toastPlugin from '@/plugins/toast';
 
 import App from './App.vue';
 import router from './router';
@@ -15,6 +14,5 @@ pinia.use(piniaPersistedstate);
 app.use(pinia);
 app.use(router);
 app.use(veeValidate);
-await toastPlugin.setup(app);
 
 app.mount('#app');

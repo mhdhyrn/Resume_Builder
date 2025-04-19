@@ -220,6 +220,7 @@ watch(
   }
 
   &__icon {
+    width: remify(25);
     &--append {
       margin-left: space(1);
     }

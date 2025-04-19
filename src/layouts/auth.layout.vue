@@ -8,11 +8,15 @@ import BaseLogo from '@/components/BaseLogo.component.vue';
         <img src="@/assets/images/login-image.png" class="main__image" alt="login image" />
       </div>
       <div class="main__form">
-        <BaseLogo class="main__logo--header" />
+        <BaseLogo class="main__logo" />
         <Transition name="fade" mode="out-in">
           <slot :key="$route.path" />
         </Transition>
-        <BaseLogo class="main__logo--footer" />
+        <div class="main__footer">
+          با عضویت در سایت روم زومه، تمامی
+          <span class="main__rules">قوانین و مقرارت</span>
+          را پذیرفته‌اید.
+        </div>
       </div>
     </div>
   </main>
@@ -84,7 +88,7 @@ import BaseLogo from '@/components/BaseLogo.component.vue';
   &__form {
     width: 100%;
     height: 100%;
-    padding: space(2);
+    padding: space(6) space(2);
     background-color: color(surface);
     @include flex($direction: column, $justify: space-between, $align: center);
 
@@ -98,21 +102,19 @@ import BaseLogo from '@/components/BaseLogo.component.vue';
   }
 
   &__logo {
-    &--header {
-      width: remify(120);
-      padding-top: space(10);
-      @include breakpoint(md) {
-        display: none;
-      }
-    }
-    &--footer {
-      width: remify(120);
-      padding-bottom: space(5);
-      display: none;
-      @include breakpoint(md) {
-        display: flex;
-      }
-    }
+    width: remify(120);
+    padding-top: space(10);
+  }
+
+  &__footer {
+    color: color(on-surface);
+    @include typography('sm', 'light');
+  }
+
+  &__rules {
+    text-decoration: underline;
+    cursor: pointer;
+    @include typography('sm', 'bold');
   }
 }
 

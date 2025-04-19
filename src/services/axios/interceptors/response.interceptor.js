@@ -1,5 +1,5 @@
-import { toast } from '@/libs';
 import axios from '../index';
+import { notify } from '@/plugins/toast';
 
 const retryStrategies = {
   exponential: (currentRetry, coefficient) => Math.pow(2, currentRetry) * coefficient,
@@ -41,10 +41,10 @@ class ErrorHandler {
     if (isShowNotify) {
       if (error.config?.showErrorDetails) {
         additionalInfos?.forEach(({ message, path }) => {
-          toast.error(message);
+          notify({ message, type: 'error' });
         });
       } else {
-        toast.error(message);
+        notify({ message, type: 'error' });
       }
     }
 

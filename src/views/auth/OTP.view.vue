@@ -4,13 +4,12 @@ import TextField from '@/components/TextField.component.vue';
 import OPTInput from '@/components/OPTInput.component.vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
-import { toast } from '@/libs';
 import { authStore } from '@/stores';
 import { usePromise } from '@/composables';
 
 const { meta: formMeta } = useForm();
 const router = useRouter();
-
+const isOtpComplete = ref(false);
 const OTPCode = ref('');
 
 const OTPButtonConfig = reactive({
@@ -22,7 +21,7 @@ const OTPButtonConfig = reactive({
 
 const submitButtonConfig = reactive({
   text: 'ورود',
-  isDisabled: computed(() => !formMeta.value.valid),
+  isDisabled: computed(() => !isOtpComplete.value),
   isLoading: computed(() => isLoginBtnLoading.value),
   type: 'submit',
 });
@@ -33,16 +32,13 @@ const {
   data: response,
 } = usePromise(authStore.verifyUser);
 
-onMounted(() => {
-  toast.success(`کد تایید به شماره ${sessionStorage.getItem('phoneNumber')} ارسال شد.`);
-});
-
 const formSubmission = () => {
   // const payload = {
   //   phoneNumber: fieldsConfig.phoneNumber.modelValue,
   //   password: fieldsConfig.password.modelValue,
   // };
   // verifyUser(payload);
+  isOtpComplete.value = true;
   isLoginBtnLoading.value = true;
   setTimeout(() => {
     isLoginBtnLoading.value = false;
@@ -60,7 +56,7 @@ const formSubmission = () => {
       <div class="OTP__field-container">
         <OPTInput label="کد تایید" v-model="OTPCode" @complete="formSubmission" />
       </div>
-      <Button v-bind="submitButtonConfig" class="" />
+      <Button v-bind="submitButtonConfig" />
     </form>
   </div>
 </template>

@@ -40,6 +40,7 @@ const headerButtonConfigs = reactive([
 
 <style lang="scss" scoped>
 .home {
+  padding-top: space(10);
   min-height: 100dvh;
   background-color: color(surface-container);
   color: color(on-surface);

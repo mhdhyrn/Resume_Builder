@@ -4,7 +4,7 @@ import TextField from '@/components/TextField.component.vue';
 import { useRouter } from 'vue-router';
 import { authStore } from '@/stores';
 import { usePromise } from '@/composables';
-import { toast } from '@/libs';
+import { notify } from '@/plugins/toast';
 
 const { meta: formMeta } = useForm();
 const router = useRouter();
@@ -14,6 +14,7 @@ const fieldsConfig = reactive({
     // modelValue: '',
     label: 'شماره موبایل',
     rules: 'required|mobileNumber',
+    prependIcon: 'smart-phone',
   },
 });
 const submitButtonConfig = reactive({
@@ -42,6 +43,7 @@ const formSubmission = () => {
     isLoginBtnLoading.value = false;
     // authStore().userInfo.phoneNumber = fieldsConfig.phoneNumber.modelValue;
     sessionStorage.setItem('phoneNumber', test.value);
+    notify({ message: `کد تایید به شماره فلان ارسال شد`, type: 'success'});
     router.push({ name: 'OTP' });
   }, 300);
 };
@@ -74,7 +76,7 @@ const formSubmission = () => {
   &__title {
     color: color(on-surface);
     margin-bottom: space(2);
-    @include typography('2xl', 'bold');
+    @include typography('xl', 'bold');
   }
 
   &__form {
