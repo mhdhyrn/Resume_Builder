@@ -137,8 +137,8 @@ $toast-types: error info success;
   line-height: 28px;
   letter-spacing: 0;
 
-  color: #ffffff;
-  background-color: #111827;
+  color: color(surface);
+  background-color: color(on-surface);
 
   &--multiple {
     flex-direction: column;

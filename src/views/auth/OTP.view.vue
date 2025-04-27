@@ -12,13 +12,6 @@ const router = useRouter();
 const isOtpComplete = ref(false);
 const OTPCode = ref('');
 
-const OTPButtonConfig = reactive({
-  variant: 'text',
-  text: 'ورود به حساب کاربری',
-  color: 'secondary',
-  handler: () => router.push({ name: 'Login' }),
-});
-
 const submitButtonConfig = reactive({
   text: 'ورود',
   isDisabled: computed(() => !isOtpComplete.value),

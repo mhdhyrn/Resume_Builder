@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { authRoutes, homeRoutes } from '@/constants/router';
+import { authRoutes, homeRoutes, resumeRoutes } from '@/constants/router';
 
 const routes = [
+  // home
   {
     path: homeRoutes.HOME_PATH,
     name: homeRoutes.HOME_NAME,
     component: homeRoutes.HOME_COMPONENT,
   },
+  // auth
   {
     path: authRoutes.ROOT_PATH,
     name: authRoutes.ROOT_NAME,
@@ -23,6 +25,27 @@ const routes = [
         name: authRoutes.OTP_NAME,
         component: authRoutes.OTP_COMPONENT,
         meta: authRoutes.OTP_META,
+      },
+    ],
+  },
+  // resume
+  {
+    path: resumeRoutes.ROOT_PATH,
+    name: resumeRoutes.ROOT_NAME,
+    redirect: { name: resumeRoutes.TEMPLATES_NAME },
+    meta: resumeRoutes.ROOT_META,
+    children: [
+      {
+        path: resumeRoutes.TEMPLATES_PATH,
+        name: resumeRoutes.TEMPLATES_NAME,
+        component: resumeRoutes.TEMPLATES_COMPONENT,
+        meta: resumeRoutes.TEMPLATE_META,
+      },
+      {
+        path: resumeRoutes.STEPS_PATH,
+        name: resumeRoutes.STEPS_NAME,
+        component: resumeRoutes.STEPS_COMPONENT,
+        meta: resumeRoutes.STEPS_META,
       },
     ],
   },

@@ -1,16 +1,23 @@
 <script setup>
 import Button from '@/components/Button.component.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const headerButtonConfigs = reactive([
   {
     text: 'ساختن روزمه حرفه‌ای',
-    // TODO: set handler
+    handler: () => {
+      router.push({ name: 'ResumeTemplates' });
+    },
   },
   {
     text: 'دیدن نمونه‌ها',
     variant: 'outline',
     color: 'secondary',
-    // TODO: set handler
+    handler: () => {
+      router.push({ name: 'ResumeTemplates' });
+    },
   },
 ]);
 </script>
