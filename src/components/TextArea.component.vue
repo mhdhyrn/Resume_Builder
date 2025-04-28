@@ -1,6 +1,4 @@
 <script setup>
-import EyeIcon from '@/assets/icons/eye.svg';
-import EyeSlashIcon from '@/assets/icons/eye-slash.svg';
 import SvgLoader from './SvgLoader.component.vue';
 
 const modelValue = defineModel({
@@ -9,11 +7,6 @@ const modelValue = defineModel({
 });
 
 const props = defineProps({
-  type: {
-    type: String,
-    default: 'text',
-    validator: (val) => ['text', 'password', 'email', 'number', 'tel'].includes(val),
-  },
   label: {
     type: String,
     default: '',
@@ -54,13 +47,13 @@ const props = defineProps({
     type: Number,
     default: null,
   },
-  autocomplete: {
-    type: String,
-    default: 'off',
-  },
   name: {
     type: String,
     default: '',
+  },
+  rows: {
+    type: Number,
+    default: 4,
   },
 });
 
@@ -69,28 +62,7 @@ const { value: fieldValue, errorMessage } = useField(props.name, props.rules, {
   syncVModel: true,
 });
 
-const input = ref();
-const showPassword = ref(false);
-const isPassword = computed(() => props.type === 'password');
-const computedType = computed(() => {
-  if (isPassword.value) {
-    if (!showPassword.value) return 'password';
-    return 'text';
-  }
-  return props.type;
-});
-const passwordIcon = computed(() => {
-  return showPassword.value ? 'eye' : 'eye-slash';
-});
-
-const togglePasswordVisibility = async () => {
-  showPassword.value = !showPassword.value;
-  await nextTick();
-  input.value.focus();
-  const length = input.value.value.length;
-
-  input.value.setSelectionRange(length, length);
-};
+const textarea = ref();
 
 watch(
   () => props.error,
@@ -101,54 +73,44 @@ watch(
 </script>
 
 <template>
-  <div class="input" :class="{ 'input--error': errorMessage }">
-    <div class="input__container">
+  <div class="textarea" :class="{ 'textarea--error': errorMessage }">
+    <div class="textarea__container">
       <slot name="prependIcon" v-if="prependIcon">
-        <SvgLoader :name="prependIcon" class="input__icon input__icon--prepend" />
+        <SvgLoader :name="prependIcon" class="textarea__icon textarea__icon--prepend" />
       </slot>
-      <div class="input__field-container">
-        <label v-if="label" :for="name" class="input__label">
+      <div class="textarea__field-container">
+        <label v-if="label" :for="name" class="textarea__label">
           {{ label }}
         </label>
-        <input
-          ref="input"
+        <textarea
+          ref="textarea"
           :id="name"
           v-model="fieldValue"
-          :type="computedType"
           :placeholder="placeholder"
           :disabled="isDisabled"
           :readonly="readonly"
           :maxlength="maxlength"
-          :autocomplete="autocomplete"
-          :class="['input__field', fieldValue ? 'has-value' : '']"
+          :rows="rows"
+          :class="['textarea__field', fieldValue ? 'has-value' : '']"
         />
       </div>
-      <button
-        v-if="isPassword"
-        type="button"
-        class="input__toggle-password"
-        @click="togglePasswordVisibility"
-      >
-        <SvgLoader :name="passwordIcon" class="input__icon--password" />
-      </button>
       <slot name="appendIcon" v-if="appendIcon">
-        <SvgLoader :name="appendIcon" class="input__icon input__icon--append" />
+        <SvgLoader :name="appendIcon" class="textarea__icon textarea__icon--append" />
       </slot>
     </div>
-    <p v-if="hint && !errorMessage" class="input__hint">{{ hint }}</p>
-    <p class="input__error">{{ errorMessage }}</p>
+    <p v-if="hint && !errorMessage" class="textarea__hint">{{ hint }}</p>
+    <p class="textarea__error">{{ errorMessage }}</p>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.input {
+.textarea {
   color: color(on-surface);
   @include flex($direction: column, $gap: space(1));
 
   &__field-container {
     position: relative;
     width: 100%;
-    height: 100%;
     padding: 0 space(1);
   }
 
@@ -159,9 +121,10 @@ watch(
     color: color(outline);
     @include typography('sm', 'medium');
   }
+
   &__label {
     position: absolute;
-    top: space(3);
+    top: space(2);
     right: space(3);
     color: color(on-surface);
     transition: all 0.2s;
@@ -171,10 +134,9 @@ watch(
   &__container {
     border: 1px solid color(outline-variant);
     border-radius: radius('lg');
-    height: remify(55);
-    padding: space(1) space(2);
+    padding: space(2);
     transition: border 0.3s;
-    @include flex($align: center);
+    @include flex($align: flex-start);
   }
 
   &:focus-within &__container {
@@ -191,6 +153,7 @@ watch(
     outline: none;
     padding: space(1);
     text-align: right;
+    resize: vertical;
     color: color(on-surface);
     margin-top: space(4);
     @include typography('md', 'medium');
@@ -212,23 +175,14 @@ watch(
     @include typography('sm', 'medium');
   }
 
-  &__toggle-password {
-    background: none;
-    border: none;
-    cursor: pointer;
-    @include flex($align: center, $justify: center);
-  }
-
   &__icon {
     width: remify(25);
+
     &--append {
       margin-left: space(1);
     }
     &--prepend {
       margin-right: space(1);
-    }
-    &--password {
-      color: color(outline);
     }
   }
 
