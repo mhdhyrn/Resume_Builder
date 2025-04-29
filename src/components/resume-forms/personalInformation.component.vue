@@ -2,7 +2,8 @@
 import Dropdown from '@/components/Dropdown.component.vue';
 import { ref } from 'vue';
 import TextArea from '../TextArea.component.vue';
-import DatePickerInputComponent from '../DatePickerInput.component.vue';
+import DatePickerInputComponent from '@/components/DatePickerInput.component.vue';
+import StepperComponent from '../Stepper.component.vue';
 
 const selectedOption = ref(null);
 const options = [
@@ -15,4 +16,5 @@ const options = [
   <pre>{{ selectedOption }}</pre>
   <TextArea v-model="selectedOption" label="جنسیت" />
   <DatePickerInputComponent />
+  <StepperComponent />
 </template>

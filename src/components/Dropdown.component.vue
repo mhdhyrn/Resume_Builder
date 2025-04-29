@@ -127,6 +127,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="u-select" ref="selectRef">
     <TextField
+      :readonly="!isSearchable"
       :is-disabled="isDisabled"
       :is-loading="isLoading"
       v-model="inputValue"

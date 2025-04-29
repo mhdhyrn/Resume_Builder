@@ -1,14 +1,16 @@
 <script setup>
 import { ref } from 'vue';
+import { stepItems } from '@/constants';
+import Dropdown from './Dropdown.component.vue';
+import { useRouter } from 'vue-router';
 
-const steps = ['اطلاعات شخصی', 'سوابق تحصیلی', 'سوابق شغلی', 'مهارت‌ها', 'پیش‌نمایش'];
-
+const router = useRouter();
 const activeStep = ref(0);
 const isMobileListOpen = ref(false);
 
-const goToStep = (index) => {
+const goToStep = (index, stepName) => {
   activeStep.value = index;
-  isMobileListOpen.value = false;
+  router.push({ name: 'ResumeForms', query: { step: stepName } });
 };
 </script>
 
@@ -17,30 +19,30 @@ const goToStep = (index) => {
     <!-- دسکتاپ -->
     <div class="stepper__desktop">
       <div
-        v-for="(step, index) in steps"
+        v-for="(step, index) in stepItems"
         :key="index"
         class="stepper__item"
         :class="{ active: index === activeStep }"
-        @click="goToStep(index)"
+        @click="goToStep(index, step.name)"
       >
         <div class="stepper__circle">{{ index + 1 }}</div>
-        <div class="stepper__label">{{ step }}</div>
+        <div class="stepper__label">{{ step.title }}</div>
       </div>
     </div>
 
     <!-- موبایل -->
     <div class="stepper__mobile">
       <button class="stepper__toggle" @click="isMobileListOpen = !isMobileListOpen">
-        مرحله: {{ steps[activeStep] }}
+        مرحله: {{ stepItems[activeStep].title }}
       </button>
       <ul v-if="isMobileListOpen" class="stepper__list">
         <li
-          v-for="(step, index) in steps"
+          v-for="(step, index) in stepItems"
           :key="index"
           :class="{ active: activeStep === index }"
-          @click="goToStep(index)"
+          @click="goToStep(index, step.name)"
         >
-          {{ step }}
+          {{ step.title }}
         </li>
       </ul>
     </div>

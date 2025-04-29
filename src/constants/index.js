@@ -1,1 +1,1 @@
-export { default as navItems } from './navItems.constant';
+export { default as stepItems } from './stepItems.constant';
