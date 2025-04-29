@@ -48,7 +48,7 @@ const props = defineProps({
   },
   rules: {
     type: [String, Array],
-    default: '',
+    default: 'required',
   },
   maxlength: {
     type: Number,
