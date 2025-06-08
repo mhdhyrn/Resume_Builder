@@ -1,45 +1,56 @@
 <script setup>
-import Button from '@/components/Button.component.vue';
-import TextField from '@/components/TextField.component.vue';
-import OPTInput from '@/components/OPTInput.component.vue';
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
-import { authStore } from '@/stores';
 import { usePromise } from '@/composables';
+import { authStore } from '@/stores';
+import Button from '@/components/Button.component.vue';
+import OPTInput from '@/components/OPTInput.component.vue';
+import { authRoutes, homeRoutes } from '@/constants/router';
+import { notify } from '@/plugins/toast';
 
-const { meta: formMeta } = useForm();
 const router = useRouter();
-const isOtpComplete = ref(false);
 const OTPCode = ref('');
+const store = authStore();
+
+const {
+  execute: verifyOtp,
+  loading: verifyOtpLoading,
+  data: verifyOtpResponse,
+  error: verifyOtpError,
+} = usePromise(store.verifyOtp, { throwOnError: false });
 
 const submitButtonConfig = reactive({
   text: 'ورود',
-  isDisabled: computed(() => !isOtpComplete.value),
-  isLoading: computed(() => isLoginBtnLoading.value),
   type: 'submit',
+  isDisabled: computed(() => OTPCode.value.trim().length < 6),
+
+  isLoading: computed(() => verifyOtpLoading.value),
 });
 
-const {
-  execute: verifyUser,
-  loading: isLoginBtnLoading,
-  data: response,
-} = usePromise(authStore.verifyUser);
+const formSubmission = async () => {
+  const response = await verifyOtp({
+    phoneNumber: store.userInfo.phoneNumber,
+    otp: OTPCode.value,
+  });
 
-const formSubmission = () => {
-  // const payload = {
-  //   phoneNumber: fieldsConfig.phoneNumber.modelValue,
-  //   password: fieldsConfig.password.modelValue,
-  // };
-  // verifyUser(payload);
-  isOtpComplete.value = true;
-  isLoginBtnLoading.value = true;
-  setTimeout(() => {
-    isLoginBtnLoading.value = false;
-    // authStore().userInfo.phoneNumber = fieldsConfig.phoneNumber.modelValue;
-    sessionStorage.setItem('isUserLogin', true);
-    router.push({ name: 'Home' });
-  }, 500);
+  if (response?.success) {
+    router.push({ name: homeRoutes.HOME_NAME });
+  } else {
+    notify({
+      message: response?.message || 'کد تایید نامعتبر است!',
+      type: 'error',
+    });
+  }
 };
+
+const handleOtpComplete = () => {
+  formSubmission();
+};
+
+onBeforeMount(() => {
+  if (!store.userInfo.phoneNumber) {
+    router.push({ name: authRoutes.LOGIN_NAME });
+  }
+});
 </script>
 
 <template>
@@ -47,7 +58,7 @@ const formSubmission = () => {
     <form class="OTP__form" @submit.prevent="formSubmission">
       <h3 class="OTP__title">تایید شماره تلفن</h3>
       <div class="OTP__field-container">
-        <OPTInput label="کد تایید" v-model="OTPCode" @complete="formSubmission" />
+        <OPTInput label="کد تایید" v-model="OTPCode" @complete="handleOtpComplete" />
       </div>
       <Button v-bind="submitButtonConfig" />
     </form>

@@ -11,11 +11,11 @@ const retryStrategies = {
 class ResponseHandler {
   static handle(response) {
     const statusCode = response?.status;
-    const message = response?.data?.data?.message?.fa;
+    const message = response?.data?.message;
     const isShowNotify = response.config?.showToast;
 
     if (isShowNotify && message) {
-      toast.success(message);
+      // notify({ message: message });
     }
 
     return {
@@ -31,22 +31,22 @@ class ErrorHandler {
   static handle(error) {
     const errorStatusCode = error.response?.status;
     const errorMetaCode = error.response?.data?.meta?.code;
-    const errorMessage = error.response?.data?.data?.message?.fa;
+    const errorMessage = error.response?.data?.message;
     const additionalInfos = error?.response?.data?.data?.additionalInfo;
     const isShowNotify = error.config?.showToast ?? true;
     const hasRetry = error.config?.retry;
 
     ErrorHandler.checkInvalidToken(errorMetaCode);
 
-    if (isShowNotify) {
-      if (error.config?.showErrorDetails) {
-        additionalInfos?.forEach(({ message, path }) => {
-          notify({ message, type: 'error' });
-        });
-      } else {
-        notify({ message, type: 'error' });
-      }
-    }
+    // if (isShowNotify) {
+    //   if (error.config?.showErrorDetails) {
+    //     additionalInfos?.forEach(({ message, path }) => {
+    //       // notify({ message, type: 'error' });
+    //     });
+    //   } else {
+    //     // notify({ message: errorMessage, type: 'error' });
+    //   }
+    // }
 
     if (hasRetry) {
       return ErrorHandler.handleRetry(error);
@@ -70,7 +70,7 @@ class ErrorHandler {
 
     if (!errorMetaCode.includes(errorCode)) return;
 
-    toast.error('درخواست شما منقضی شده است.');
+    notify({ message: 'درخواست شما منقضی شده است.' });
     sessionStorage.clear('access_token');
   }
 

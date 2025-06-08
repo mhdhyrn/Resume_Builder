@@ -1,19 +1,26 @@
 import axios from '../axios';
 
-const baseURL = 'baseURL';
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-export const verifyUser = ({ phone_number, password }) => {
+export const verifyUser = (data) => {
   return axios({
     method: 'POST',
     baseURL,
-    url: '/auth/login',
-    data: {
-      phone_number,
-      password,
-    },
+    url: '/auth/request-otp',
+    data,
+  });
+};
+
+export const verifyOtp = (data) => {
+  return axios({
+    method: 'POST',
+    baseURL,
+    url: '/auth/verify-otp',
+    data,
   });
 };
 
 export default {
   verifyUser,
+  verifyOtp,
 };

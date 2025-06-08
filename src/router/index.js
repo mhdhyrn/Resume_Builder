@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { authRoutes, homeRoutes, resumeRoutes } from '@/constants/router';
+import { modalStore } from '@/stores';
 
 const routes = [
   // home
@@ -39,6 +40,11 @@ const routes = [
         path: resumeRoutes.TEMPLATES_PATH,
         name: resumeRoutes.TEMPLATES_NAME,
         component: resumeRoutes.TEMPLATES_COMPONENT,
+        redirect: {
+          name: resumeRoutes.STEPS_NAME,
+          params: { templateId: 1 },
+          query: { step: 'personalInformation' },
+        },
         meta: resumeRoutes.TEMPLATE_META,
       },
       {
@@ -54,6 +60,20 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const store = modalStore();
+  const isAuthRequired = to.meta.isAuthRequired === true;
+  const hasToken = !!sessionStorage.getItem('access_token');
+
+  if (isAuthRequired && !hasToken) {
+    store.openAuthModal();
+    next(false);
+    return;
+  }
+
+  next();
 });
 
 export default router;

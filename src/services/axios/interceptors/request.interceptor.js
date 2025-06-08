@@ -3,16 +3,19 @@ function validateResponse(response) {}
 const getItemFromSession = (key) => sessionStorage.getItem(key);
 
 const isAuthenticated = () => {
-  return !!sessionStorage.getItem('access-token');
+  return !!sessionStorage.getItem('access_token');
 };
 
 const setHeaders = (config) => {
+  const existingHeaders = config.headers || {};
+
   config.headers = {
-    ...config.headers,
+    ...existingHeaders,
     'Cache-Control': 'no-cache',
   };
+
   if (isAuthenticated()) {
-    config.headers['token'] = sessionStorage.getItem('access-token');
+    config.headers['authorization'] = `Bearer ${sessionStorage.getItem('access_token')}`;
   }
 };
 

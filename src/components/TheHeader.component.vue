@@ -6,12 +6,23 @@ import SvgLoader from './SvgLoader.component.vue';
 // import { navItems } from '@/constants';
 import { useRouter } from 'vue-router';
 import ThemeToggleComponent from './ThemeToggle.component.vue';
+import { authStore } from '@/stores';
+import { computed } from 'vue';
 
 const router = useRouter();
+const store = authStore();
 const isSidebarOpen = ref(false);
 
 const openSidebar = () => (isSidebarOpen.value = true);
 const closeSidebar = () => (isSidebarOpen.value = false);
+
+const isLoggedIn = computed(() => {
+  return !!sessionStorage.getItem('access_token');
+});
+
+const userPhoneNumber = computed(() => {
+  return store.userInfo.phoneNumber;
+});
 
 const loginButtonConfig = {
   text: 'ورود',
@@ -36,17 +47,28 @@ const loginButtonConfig = {
     </nav> -->
     <div class="the-header__action-container">
       <ThemeToggleComponent />
-      <Button v-bind="loginButtonConfig" class="the-header__auth-btn" />
-      <!-- <div class="the-header__user-profile" v-else>
-        <div class="the-header__user-image"></div>
-        <span class="the-header__user-phone-number">{{ phoneNumber }}</span>
-      </div> -->
+      <template v-if="isLoggedIn && userPhoneNumber">
+        <div class="the-header__user-profile">
+          <span class="the-header__user-phone-number">{{ userPhoneNumber }}</span>
+          <div class="the-header__user-image">
+            <SvgLoader name="profile-avatar" class="profile-image" />
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <Button v-bind="loginButtonConfig" class="the-header__auth-btn" />
+      </template>
       <!-- <TheSidebar :items="navItems" :is-open="isSidebarOpen" @close="closeSidebar" /> -->
     </div>
   </header>
 </template>
 
 <style lang="scss" scoped>
+.profile-image {
+  width: 40px;
+  height: 40px;
+  color: color(on-surface);
+}
 .the-header {
   position: fixed;
   top: 0;
@@ -135,5 +157,13 @@ const loginButtonConfig = {
       display: none;
     }
   }
+}
+
+.the-header__user-profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: space(2);
+  color: color(on-surface);
 }
 </style>

@@ -1,26 +1,39 @@
 import authService from '@/services/api/auth.service';
-import { reactive, ref } from 'vue';
+import { verifyUserMapper, verifyOtpMapper } from '@/mappers/auth/auth.mapper';
+import { ref } from 'vue';
 
 export const useAuthStore = defineStore(
   'auth',
   () => {
-    const token = ref(sessionStorage.getItem('access-token') || '');
-    const userInfo = reactive({
-      phoneNumber: sessionStorage.getItem('userInfo.phoneNumber') || '',
+    const userInfo = ref({
+      phoneNumber: '123',
     });
 
-    const verifyUser = async ({ phoneNumber, password }) => {
-      const payload = { phone_number: phoneNumber, password };
-      const { data } = await authService.login(payload);
-      sessionStorage.setItem('access-token', data?.token);
+    const verifyUser = async ({ phoneNumber }) => {
+      const payload = verifyUserMapper(phoneNumber);
+      const response = await authService.verifyUser(payload);
+      userInfo.value.phoneNumber = phoneNumber;
+      return response;
     };
 
-    return { verifyUser, userInfo };
+    const verifyOtp = async ({ phoneNumber, otp }) => {
+      const payload = verifyOtpMapper(phoneNumber, otp);
+      const response = await authService.verifyOtp(payload);
+      if (response.status == 200)
+        sessionStorage.setItem('access_token', response.data.access_token);
+      return response;
+    };
+
+    return {
+      verifyUser,
+      verifyOtp,
+      userInfo,
+    };
   },
   {
     persist: {
-      path: ['access-token', 'userInfo'],
-      storage: sessionStorage,
+      storage: localStorage,
+      paths: ['userInfo'],
     },
   },
 );

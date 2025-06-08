@@ -15,5 +15,9 @@ const steps = [
     name: 'skills',
     title: 'مهارت ها',
   },
+  {
+    name: 'final',
+    title: 'دانلود رزومه',
+  },
 ];
 export default steps;

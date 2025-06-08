@@ -1,68 +1,70 @@
 <script setup>
+import { useRouter } from 'vue-router';
 import Button from '@/components/Button.component.vue';
 import TextField from '@/components/TextField.component.vue';
-import { useRouter } from 'vue-router';
 import { authStore } from '@/stores';
 import { usePromise } from '@/composables';
 import { notify } from '@/plugins/toast';
+import { authRoutes } from '@/constants/router';
 
-const { meta: formMeta } = useForm();
 const router = useRouter();
+const store = authStore();
+const { meta: formMeta } = useForm();
 
-const fieldsConfig = reactive({
+const formData = reactive({
+  phoneNumber: '',
+});
+
+const fieldsConfig = {
   phoneNumber: {
-    // modelValue: '',
     label: 'شماره موبایل',
     rules: 'required|mobileNumber',
     prependIcon: 'smart-phone',
   },
-});
-const submitButtonConfig = reactive({
-  text: 'ورود',
-  isDisabled: computed(() => !formMeta.value.valid),
-  isLoading: computed(() => isLoginBtnLoading.value),
-  type: 'submit',
-});
-
-const test = ref('');
+};
 
 const {
   execute: verifyUser,
-  loading: isLoginBtnLoading,
-  data: response,
-} = usePromise(authStore.verifyUser);
+  loading: isVerifyUserLoading,
+  data: verifyUserResponse,
+} = usePromise(store.verifyUser);
 
-const formSubmission = () => {
-  // const payload = {
-  //   phoneNumber: fieldsConfig.phoneNumber.modelValue,
-  //   password: fieldsConfig.password.modelValue,
-  // };
-  // verifyUser(payload);
-  isLoginBtnLoading.value = true;
-  setTimeout(() => {
-    isLoginBtnLoading.value = false;
-    // authStore().userInfo.phoneNumber = fieldsConfig.phoneNumber.modelValue;
-    sessionStorage.setItem('phoneNumber', test.value);
-    notify({ message: `کد تایید به شماره فلان ارسال شد`, type: 'success'});
-    router.push({ name: 'OTP' });
-  }, 300);
+const submitButtonConfig = reactive({
+  text: 'ورود',
+  type: 'submit',
+  isLoading: computed(() => isVerifyUserLoading.value),
+  isDisabled: computed(() => !formMeta.value.valid),
+});
+
+const formSubmission = async () => {
+  await verifyUser({ phoneNumber: formData.phoneNumber });
+  console.log(verifyUserResponse.value);
+
+  notify({
+    message: `کد به شماره ${store.userInfo.phoneNumber} ارسال شد! کد تایید : ${verifyUserResponse.value.data.otp}`,
+    duration: 5000,
+  });
+  router.push({ name: authRoutes.OTP_NAME });
 };
 </script>
+
 <template>
   <div class="login">
     <form class="login__form" @submit.prevent="formSubmission">
       <h3 class="login__title">ورود به حساب کاربری</h3>
+
       <div class="login__field-container">
         <TextField
-          v-for="(filed, key, index) in fieldsConfig"
-          :key="index"
+          v-for="(config, key) in fieldsConfig"
+          :key="key"
+          v-model="formData[key]"
           :name="key"
-          v-bind="filed"
-          v-model="test"
+          v-bind="config"
           class="login__field"
         />
       </div>
-      <Button v-bind="submitButtonConfig" class="" />
+
+      <Button v-bind="submitButtonConfig" />
     </form>
   </div>
 </template>

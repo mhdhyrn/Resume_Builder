@@ -1,22 +1,42 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { stepItems } from '@/constants';
 import Dropdown from './Dropdown.component.vue';
-import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
 const activeStep = ref(0);
 const isMobileListOpen = ref(false);
 
+// بر اساس route.query مقدار activeStep را تعیین کن
+const setActiveStepFromRoute = () => {
+  const stepFromRoute = route.query.step;
+  const foundIndex = stepItems.findIndex((step) => step.name === stepFromRoute);
+  activeStep.value = foundIndex !== -1 ? foundIndex : 0;
+};
+
+// زمان بارگذاری کامپوننت مقدار اولیه رو بخون
+onMounted(() => {
+  setActiveStepFromRoute();
+});
+
+// در صورت تغییر روت مقدار step رو به‌روز کن
+watch(
+  () => route.query.step,
+  () => {
+    setActiveStepFromRoute();
+  },
+);
+
+// هنگام کلیک روی استپ
 const goToStep = (index, stepName) => {
-  activeStep.value = index;
   router.push({ name: 'ResumeForms', query: { step: stepName } });
 };
 </script>
 
 <template>
   <div class="stepper">
-    <!-- دسکتاپ -->
     <div class="stepper__desktop">
       <div
         v-for="(step, index) in stepItems"
@@ -30,7 +50,6 @@ const goToStep = (index, stepName) => {
       </div>
     </div>
 
-    <!-- موبایل -->
     <div class="stepper__mobile">
       <button class="stepper__toggle" @click="isMobileListOpen = !isMobileListOpen">
         مرحله: {{ stepItems[activeStep].title }}
@@ -52,7 +71,9 @@ const goToStep = (index, stepName) => {
 <style lang="scss" scoped>
 .stepper {
   width: 100%;
-  margin-bottom: 2rem;
+  background-color: color(surface);
+  padding: space(5);
+  border-radius: radius(lg);
 
   &__desktop {
     display: flex;
@@ -74,8 +95,8 @@ const goToStep = (index, stepName) => {
       height: 35px;
       border-radius: 50%;
       margin: 0 auto 5px;
-      background-color: #ccc;
-      color: #fff;
+      background-color: color(disabled-soft);
+      color: color(on-disabled);
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -85,16 +106,17 @@ const goToStep = (index, stepName) => {
 
     .stepper__label {
       font-size: 14px;
-      color: #666;
+      color: color(on-surface);
     }
 
     &.active {
       .stepper__circle {
-        background-color: #3b82f6; // primary
+        background-color: color(primary); // primary
+        color: color(on-primary);
       }
 
       .stepper__label {
-        color: #3b82f6;
+        color: color(primary);
         font-weight: bold;
       }
     }
