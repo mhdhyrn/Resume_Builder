@@ -1,6 +1,8 @@
 import authService from '@/services/api/auth.service';
 import { verifyUserMapper, verifyOtpMapper } from '@/mappers/auth/auth.mapper';
 import { ref } from 'vue';
+import personalInfoService from '@/services/api/personal-info.service';
+import { profileInfoMapper } from '@/mappers/personal-info/personal-info.mapper';
 
 export const useAuthStore = defineStore(
   'auth',
@@ -28,6 +30,17 @@ export const useAuthStore = defineStore(
       verifyUser,
       verifyOtp,
       userInfo,
+      async updateProfile(data) {
+        const formData = profileInfoMapper(data);
+        const response = await personalInfoService.updateProfileInfo(formData);
+        if (response.status === 200) {
+          userInfo.value = {
+            ...userInfo.value,
+            ...data,
+          };
+        }
+        return response;
+      },
     };
   },
   {

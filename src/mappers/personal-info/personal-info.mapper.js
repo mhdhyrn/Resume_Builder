@@ -50,7 +50,14 @@ export function profileInfoMapper(data) {
 
   if (data.firstName) formData.append('first_name', data.firstName);
   if (data.lastName) formData.append('last_name', data.lastName);
-  if (data.birthDate) formData.append('birth_date', data.birthDate);
+  if (data.birthDate) {
+    // Ensure date is in YYYY-MM-DD format with '-' separator
+    let birthDate = data.birthDate;
+    if (typeof birthDate === 'string') {
+      birthDate = birthDate.replace(/\//g, '-');
+    }
+    formData.append('birth_date', birthDate);
+  }
   if (data.profilePicture) formData.append('profile_picture', data.profilePicture);
 
   return formData;

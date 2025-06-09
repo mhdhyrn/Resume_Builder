@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { authRoutes, homeRoutes, resumeRoutes } from '@/constants/router';
 import { modalStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
 
 const routes = [
   // home
@@ -26,6 +27,12 @@ const routes = [
         name: authRoutes.OTP_NAME,
         component: authRoutes.OTP_COMPONENT,
         meta: authRoutes.OTP_META,
+      },
+      {
+        path: authRoutes.PROFILE_COMPLETION_PATH,
+        name: authRoutes.PROFILE_COMPLETION_NAME,
+        component: authRoutes.PROFILE_COMPLETION_COMPONENT,
+        meta: authRoutes.PROFILE_COMPLETION_META,
       },
     ],
   },
@@ -62,6 +69,8 @@ const router = createRouter({
   routes,
 });
 
+let profileModalShown = false;
+
 router.beforeEach((to, from, next) => {
   const store = modalStore();
   const isAuthRequired = to.meta.isAuthRequired === true;
@@ -71,6 +80,26 @@ router.beforeEach((to, from, next) => {
     store.openAuthModal();
     next(false);
     return;
+  }
+
+  // Only check for profile completion if user is logged in
+  if (hasToken) {
+    const authStore = useAuthStore();
+    const info = authStore.userInfo;
+    const isProfileIncomplete =
+      !info.firstName || !info.lastName || !info.birthDate || !info.profilePicture;
+    const isOnProfileCompletion = to.name === authRoutes.PROFILE_COMPLETION_NAME;
+    if (
+      isProfileIncomplete &&
+      !isOnProfileCompletion &&
+      to.name !== authRoutes.LOGIN_NAME &&
+      to.name !== authRoutes.OTP_NAME
+    ) {
+      if (!profileModalShown) {
+        store.openProfileModal();
+        profileModalShown = true;
+      }
+    }
   }
 
   next();

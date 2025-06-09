@@ -4,7 +4,7 @@ import { usePromise } from '@/composables';
 import { authStore } from '@/stores';
 import Button from '@/components/Button.component.vue';
 import OPTInput from '@/components/OPTInput.component.vue';
-import { authRoutes, homeRoutes } from '@/constants/router';
+import { authRoutes } from '@/constants/router';
 import { notify } from '@/plugins/toast';
 
 const router = useRouter();
@@ -33,7 +33,7 @@ const formSubmission = async () => {
   });
 
   if (response?.success) {
-    router.push({ name: homeRoutes.HOME_NAME });
+    router.push({ name: authRoutes.PROFILE_COMPLETION_NAME });
   } else {
     notify({
       message: response?.message || 'کد تایید نامعتبر است!',

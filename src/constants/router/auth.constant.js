@@ -11,6 +11,11 @@ const routes = Object.freeze({
   OTP_PATH: 'otp',
   OTP_COMPONENT: () => import('@/views/auth/OTP.view.vue'),
   OTP_META: { layout: 'auth' },
+
+  PROFILE_COMPLETION_NAME: 'ProfileCompletion',
+  PROFILE_COMPLETION_PATH: 'profile-completion',
+  PROFILE_COMPLETION_COMPONENT: () => import('@/views/auth/ProfileCompletion.view.vue'),
+  PROFILE_COMPLETION_META: { layout: 'auth', isAuthRequired: true },
 });
 
 export default routes;

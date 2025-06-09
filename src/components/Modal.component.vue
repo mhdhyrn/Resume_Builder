@@ -1,40 +1,52 @@
 <script setup>
-import { useRouter } from 'vue-router';
 import Button from '@/components/Button.component.vue';
-import { authRoutes } from '@/constants/router';
 
 const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true,
   },
+  title: {
+    type: String,
+    default: '',
+  },
+  description: {
+    type: String,
+    default: '',
+  },
+  okText: {
+    type: String,
+    default: 'تایید',
+  },
+  cancelText: {
+    type: String,
+    default: 'بیخیال',
+  },
 });
 
-const emit = defineEmits(['close']);
-const router = useRouter();
+const emit = defineEmits(['ok', 'cancel']);
 
-const handleLogin = () => {
-  router.push({ name: authRoutes.LOGIN_NAME });
-  emit('close');
+const handleOk = () => {
+  emit('ok');
 };
 
 const handleCancel = () => {
-  emit('close');
+  emit('cancel');
 };
 </script>
 
 <template>
   <Transition name="fade">
-    <div v-if="isOpen" class="auth-modal">
-      <div class="auth-modal__backdrop" @click="handleCancel" />
-      <div class="auth-modal__content">
-        <h3 class="auth-modal__title">نیاز به احراز هویت</h3>
-        <p class="auth-modal__description">
-          برای دسترسی به این بخش نیاز به ورود به حساب کاربری دارید.
+    <div v-if="isOpen" class="modal">
+      <div class="modal__backdrop" @click="handleCancel" />
+      <div class="modal__content">
+        <h3 class="modal__title">{{ title }}</h3>
+        <p class="modal__description">
+          {{ description }}
         </p>
-        <div class="auth-modal__actions">
-          <Button text="ورود" @click="handleLogin" />
-          <Button text="بیخیال" variant="outline" color="error" @click="handleCancel" />
+        <div class="modal__actions">
+          <Button :text="okText" @click="handleOk" />
+          <Button :text="cancelText" variant="outline" color="error" @click="handleCancel" />
         </div>
       </div>
     </div>
@@ -42,7 +54,8 @@ const handleCancel = () => {
 </template>
 
 <style lang="scss" scoped>
-.auth-modal {
+.auth-modal,
+.modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
