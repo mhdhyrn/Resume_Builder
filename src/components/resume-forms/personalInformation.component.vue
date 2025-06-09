@@ -5,7 +5,7 @@ import Button from '../Button.component.vue';
 import DatePickerInput from '../DatePickerInput.component.vue';
 import ImagePickerComponent from '../ImagePicker.component.vue';
 import { useRouter } from 'vue-router';
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import DropdownComponent from '../Dropdown.component.vue';
 import { personalInfoStore } from '@/stores';
 import { notify } from '@/plugins/toast';
@@ -162,6 +162,39 @@ const submitButtonConfig = reactive({
     return !(isFormFilled.value && isAvatarUploaded);
   }),
   isLoading: computed(() => !!isButtonLoading.value),
+});
+
+onMounted(async () => {
+  try {
+    await store.fetchAllData();
+
+    // Fill profile info data
+    formFields.value.textField.firstSection.firstName.value = store.profileInfo.firstName;
+    formFields.value.textField.firstSection.lastName.value = store.profileInfo.lastName;
+    formFields.value.datePicker.birthDate.value = store.profileInfo.birthDate;
+    formFields.value.image.avatar.value = store.profileInfo.profilePicture;
+
+    // Fill personal info data
+    formFields.value.select.gender.value = store.personalInfo.gender;
+    formFields.value.select.maritalStatus.value = store.personalInfo.isMarried;
+    formFields.value.select.militaryServiceStatus.value = store.personalInfo.militaryServiceStatus;
+    formFields.value.textArea.aboutMe.value = store.personalInfo.aboutMe;
+
+    // Fill contact info data
+    formFields.value.textField.secondSection.email.value = store.contactInfo.email;
+    formFields.value.textField.secondSection.mobile.value = store.contactInfo.phoneNumber;
+    formFields.value.textField.secondSection.phone.value = store.contactInfo.landline;
+    formFields.value.textField.secondSection.website.value = store.contactInfo.website;
+    formFields.value.textField.secondSection.country.value = store.contactInfo.country;
+    formFields.value.textField.secondSection.province.value = store.contactInfo.province;
+    formFields.value.textField.secondSection.city.value = store.contactInfo.city;
+    formFields.value.textField.secondSection.address.value = store.contactInfo.address;
+  } catch (error) {
+    notify({
+      message: 'خطا در دریافت اطلاعات',
+      type: 'error',
+    });
+  }
 });
 
 const handleSubmit = async () => {

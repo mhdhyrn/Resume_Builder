@@ -62,3 +62,61 @@ export function profileInfoMapper(data) {
 
   return formData;
 }
+
+/**
+ * @param {Object} data
+ * @param {string} data.gender
+ * @param {boolean} data.is_married
+ * @param {string} data.military_service_status
+ * @param {string} data.about_me
+ */
+export function mapPersonalInfoFromAPI(data) {
+  return {
+    gender: data.gender,
+    isMarried: data.is_married,
+    militaryServiceStatus: data.military_service_status,
+    aboutMe: data.about_me,
+  };
+}
+
+/**
+ * @param {Object} data
+ * @param {string} data.phone_number
+ * @param {string} data.email
+ * @param {string} data.landline
+ * @param {string} data.website
+ * @param {string} data.country
+ * @param {string} data.province
+ * @param {string} data.city
+ * @param {string} data.address
+ */
+export function mapContactInfoFromAPI(data) {
+  return {
+    phoneNumber: data.phone_number,
+    email: data.email,
+    landline: data.landline,
+    website: data.website,
+    country: data.country,
+    province: data.province,
+    city: data.city,
+    address: data.address,
+  };
+}
+
+/**
+ * @param {Object} data
+ * @param {string} data.phone_number
+ * @param {string} data.first_name
+ * @param {string} data.last_name
+ * @param {string} data.profile_picture
+ * @param {string} data.birth_date
+ */
+export function mapUserProfileFromAPI(data) {
+  return {
+    phoneNumber: data.phone_number,
+    firstName: data.first_name,
+    lastName: data.last_name,
+    profilePicture: data.profile_picture,
+    birthDate: data.birth_date,
+  };
+}

@@ -2,6 +2,30 @@ import axios from '../axios';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
+export const getPersonalInfo = () => {
+  return axios({
+    method: 'GET',
+    baseURL,
+    url: '/resume/resume/personal-info',
+  });
+};
+
+export const getContactInfo = () => {
+  return axios({
+    method: 'GET',
+    baseURL,
+    url: '/resume/resume/contact-info',
+  });
+};
+
+export const getUserProfile = () => {
+  return axios({
+    method: 'GET',
+    baseURL,
+    url: '/users/me',
+  });
+};
+
 export const updatePersonalInfo = (data) => {
   return axios({
     method: 'PUT',
@@ -33,6 +57,9 @@ export const updateProfileInfo = (formData) => {
 };
 
 export default {
+  getPersonalInfo,
+  getContactInfo,
+  getUserProfile,
   updatePersonalInfo,
   updateContactInfo,
   updateProfileInfo,
