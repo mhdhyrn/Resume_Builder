@@ -46,12 +46,24 @@ export const updateContactInfo = (data) => {
 
 export const updateProfileInfo = (formData) => {
   return axios({
-    method: 'PATCH',
+    method: 'PUT',
     baseURL,
     url: '/users/profile',
     data: formData,
     headers: {
       'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+export const getAIAboutMeSuggestion = (prompt) => {
+  return axios({
+    method: 'POST',
+    baseURL,
+    url: '/resume/resume/about-me-ai',
+    data: {
+      prompt,
+      model: '',
     },
   });
 };
@@ -63,4 +75,5 @@ export default {
   updatePersonalInfo,
   updateContactInfo,
   updateProfileInfo,
+  getAIAboutMeSuggestion,
 };

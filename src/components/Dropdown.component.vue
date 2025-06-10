@@ -43,13 +43,27 @@ const props = defineProps({
 
 const selectRef = ref(null);
 const searchValue = ref('');
-const activeOptionLabel = ref(modelValue.value);
+const activeOptionLabel = ref('');
+
+// Find initial label when component mounts
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+
+  // Set initial label if value exists (including false values)
+  if (modelValue.value !== undefined && modelValue.value !== '') {
+    const option = props.options.find((opt) => (opt.value ?? opt) === modelValue.value);
+    if (option) {
+      activeOptionLabel.value = option.label ?? option;
+    }
+  }
+});
+
 const inputValue = computed({
   get() {
     if (isDropdownOpen.value) return searchValue.value;
     else {
       resetSearchValue();
-      if (!modelValue.value) resetActiveOptionLabel();
+      if (modelValue.value === undefined || modelValue.value === '') resetActiveOptionLabel();
       return activeOptionLabel.value;
     }
   },
@@ -109,7 +123,10 @@ const onOptionClick = (option) => {
   toggleDropdown();
 };
 
-const isOptionActive = (option) => modelValue.value == option;
+const isOptionActive = (option) => {
+  const optionValue = option.value ?? option;
+  return modelValue.value === optionValue;
+};
 
 const handleClickOutside = (event) => {
   if (!selectRef.value.contains(event.target)) isDropdownOpen.value = false;

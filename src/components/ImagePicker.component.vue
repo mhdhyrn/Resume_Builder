@@ -2,11 +2,31 @@
 import { ref, watch } from 'vue';
 import SvgLoader from './SvgLoader.component.vue';
 
+const props = defineProps({
+  value: {
+    type: Object,
+    default: () => null,
+  },
+});
+
 const emit = defineEmits(['select', 'remove']);
 
 const selectedFile = ref(null);
 const previewUrl = ref(null);
 const fileInput = ref(null);
+
+const reset = () => {
+  selectedFile.value = null;
+  if (previewUrl.value && !props.value?.url) {
+    URL.revokeObjectURL(previewUrl.value);
+  }
+  previewUrl.value = null;
+  emit('remove');
+
+  if (fileInput.value) {
+    fileInput.value.value = '';
+  }
+};
 
 const onFileChange = (event) => {
   const file = event.target.files[0];
@@ -14,7 +34,7 @@ const onFileChange = (event) => {
   if (file && file.type.startsWith('image/')) {
     selectedFile.value = file;
     previewUrl.value = URL.createObjectURL(file);
-    emit('select', file);
+    emit('select', { file, url: previewUrl.value });
 
     // ریست مقدار input
     if (fileInput.value) {
@@ -25,15 +45,18 @@ const onFileChange = (event) => {
   }
 };
 
-const reset = () => {
-  selectedFile.value = null;
-  previewUrl.value = null;
-  emit('remove');
-
-  if (fileInput.value) {
-    fileInput.value.value = '';
-  }
-};
+// Watch for external value changes
+watch(
+  () => props.value,
+  (newValue) => {
+    if (newValue?.url) {
+      previewUrl.value = newValue.url;
+    } else {
+      reset();
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

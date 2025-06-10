@@ -9,6 +9,8 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import DropdownComponent from '../Dropdown.component.vue';
 import { personalInfoStore } from '@/stores';
 import { notify } from '@/plugins/toast';
+import LoadingComponent from '../Loading.component.vue';
+import { getAIAboutMeSuggestion } from '@/services/api/personal-info.service';
 
 const router = useRouter();
 const store = personalInfoStore();
@@ -41,11 +43,6 @@ const formFields = ref({
         value: '',
         rules: 'required',
         label: 'نام خانوادگی',
-      },
-      resumeLabel: {
-        value: '',
-        rules: 'required',
-        label: 'عنوان رزومه',
       },
     },
     secondSection: {
@@ -164,6 +161,37 @@ const submitButtonConfig = reactive({
   isLoading: computed(() => !!isButtonLoading.value),
 });
 
+const isLoading = ref(true);
+const baseURL = 'http://37.32.24.212:8000';
+
+// Helper function to get full image URL
+const getFullImageUrl = (path) => {
+  if (!path) return null;
+  return `${baseURL}${path}`;
+};
+
+// Helper function to find label by value
+const findLabelByValue = (options, value) => {
+  const option = options.find((opt) => opt.value === value);
+  return option ? option.label : value;
+};
+
+// Computed properties for dropdown labels
+const genderLabel = computed(() =>
+  findLabelByValue(formFields.value.select.gender.options, store.personalInfo?.gender),
+);
+
+const maritalStatusLabel = computed(() =>
+  findLabelByValue(formFields.value.select.maritalStatus.options, store.personalInfo?.isMarried),
+);
+
+const militaryServiceStatusLabel = computed(() =>
+  findLabelByValue(
+    formFields.value.select.militaryServiceStatus.options,
+    store.personalInfo?.militaryServiceStatus,
+  ),
+);
+
 onMounted(async () => {
   try {
     await store.fetchAllData();
@@ -172,7 +200,14 @@ onMounted(async () => {
     formFields.value.textField.firstSection.firstName.value = store.profileInfo.firstName;
     formFields.value.textField.firstSection.lastName.value = store.profileInfo.lastName;
     formFields.value.datePicker.birthDate.value = store.profileInfo.birthDate;
-    formFields.value.image.avatar.value = store.profileInfo.profilePicture;
+
+    // Handle profile picture
+    if (store.profileInfo.profilePicture) {
+      formFields.value.image.avatar.value = {
+        url: getFullImageUrl(store.profileInfo.profilePicture),
+        path: store.profileInfo.profilePicture,
+      };
+    }
 
     // Fill personal info data
     formFields.value.select.gender.value = store.personalInfo.gender;
@@ -194,6 +229,8 @@ onMounted(async () => {
       message: 'خطا در دریافت اطلاعات',
       type: 'error',
     });
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -221,13 +258,19 @@ const handleSubmit = async () => {
       address: formFields.value.textField.secondSection.address.value,
     });
 
-    // Update profile info
-    await store.updateProfileInfo({
+    // Update profile info - only send profilePicture if it's a new file
+    const profileData = {
       firstName: formFields.value.textField.firstSection.firstName.value,
       lastName: formFields.value.textField.firstSection.lastName.value,
       birthDate: formFields.value.datePicker.birthDate.value,
-      profilePicture: formFields.value.image.avatar.value,
-    });
+    };
+
+    // Only add profilePicture if it's a new File object
+    if (formFields.value.image.avatar.value?.file instanceof File) {
+      profileData.profilePicture = formFields.value.image.avatar.value.file;
+    }
+
+    await store.updateProfileInfo(profileData);
 
     notify({
       message: 'اطلاعات با موفقیت ذخیره شد',
@@ -244,67 +287,121 @@ const handleSubmit = async () => {
     isButtonLoading.value = false;
   }
 };
+
+const isAILoading = ref(false);
+
+const getAISuggestion = async () => {
+  try {
+    isAILoading.value = true;
+    const response = await getAIAboutMeSuggestion(formFields.value.textArea.aboutMe.value);
+    console.log('AI Response:', response);
+
+    // اگر response.data یک string نیست، احتمالاً در یک فیلد دیگه قرار داره
+    const suggestion = response.data?.suggestion || response.data?.text || response.data;
+
+    if (typeof suggestion === 'string') {
+      formFields.value.textArea.aboutMe.value = suggestion.replace(/\\n/g, '\n');
+    } else {
+      throw new Error('فرمت پاسخ دریافتی نامعتبر است');
+    }
+  } catch (error) {
+    notify({
+      message: error.message || 'خطا در دریافت پیشنهاد',
+      type: 'error',
+    });
+  } finally {
+    isAILoading.value = false;
+  }
+};
+
+// computed برای کنترل disabled بودن دکمه
+const isAIButtonDisabled = computed(() => {
+  return !formFields.value.textArea.aboutMe.value || isAILoading.value;
+});
 </script>
 
 <template>
   <div class="main">
-    <div class="title">اطلاعات شخصی</div>
-    <form class="form" @submit.prevent="handleSubmit">
-      <div class="form-container">
-        <ImagePickerComponent
-          @select="(file) => (formFields.image.avatar.value = file)"
-          @remove="() => (formFields.image.avatar.value = null)"
-        />
-        <div class="grid">
+    <div class="loading-container" v-if="isLoading">
+      <LoadingComponent />
+    </div>
+    <template v-else>
+      <div class="title">اطلاعات شخصی</div>
+      <form class="form" @submit.prevent="handleSubmit">
+        <div class="form-container">
+          <ImagePickerComponent
+            :value="formFields.image.avatar.value"
+            @select="(file) => (formFields.image.avatar.value = file)"
+            @remove="() => (formFields.image.avatar.value = null)"
+          />
+          <div class="grid">
+            <TextField
+              v-for="(field, index) in formFields.textField.firstSection"
+              :key="index"
+              v-bind="field"
+              v-model="field.value"
+            />
+            <DropdownComponent
+              v-for="(field, index) in formFields.select"
+              :key="index"
+              v-bind="field"
+              v-model="field.value"
+            />
+            <DatePickerInput
+              v-for="(field, index) in formFields.datePicker"
+              :key="index"
+              v-bind="field"
+              v-model="field.value"
+            />
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="grid2">
           <TextField
-            v-for="(field, index) in formFields.textField.firstSection"
-            :key="index"
-            v-bind="field"
-            v-model="field.value"
-          />
-          <DropdownComponent
-            v-for="(field, index) in formFields.select"
-            :key="index"
-            v-bind="field"
-            v-model="field.value"
-          />
-          <DatePickerInput
-            v-for="(field, index) in formFields.datePicker"
+            v-for="(field, index) in formFields.textField.secondSection"
             :key="index"
             v-bind="field"
             v-model="field.value"
           />
         </div>
-      </div>
 
-      <hr />
+        <hr />
 
-      <div class="grid2">
-        <TextField
-          v-for="(field, index) in formFields.textField.secondSection"
+        <TextArea
+          v-for="(field, index) in formFields.textArea"
           :key="index"
           v-bind="field"
           v-model="field.value"
-        />
-      </div>
+        >
+        </TextArea>
+        <div class="ai-section">
+          <button
+            class="ai-button"
+            :disabled="isAIButtonDisabled"
+            :class="{ 'is-loading': isAILoading }"
+            @click="getAISuggestion"
+          >
+            <span v-if="!isAILoading">پیشنهاد هوش مصنوعی</span>
+            <span v-else>در حال دریافت پیشنهاد...</span>
+          </button>
+          <p class="ai-hint">برای گرفتن پیشنهاد از هوش مصنوعی، کلید واژه‌های مهم خود را بنویسید.</p>
+        </div>
 
-      <hr />
-
-      <TextArea
-        v-for="(field, index) in formFields.textArea"
-        :key="index"
-        v-bind="field"
-        v-model="field.value"
-      />
-
-      <div class="submit-row">
-        <Button class="submit-btn" v-bind="submitButtonConfig" type="submit" />
-      </div>
-    </form>
+        <div class="submit-row">
+          <Button class="submit-btn" v-bind="submitButtonConfig" type="submit" />
+        </div>
+      </form>
+    </template>
   </div>
 </template>
 
 <style lang="scss" scoped>
+.loading-container {
+  width: 70%;
+  height: 100%;
+}
 hr {
   margin: 30px 0;
   color: color(disabled-soft);
@@ -312,6 +409,7 @@ hr {
 
 .main {
   width: 100%;
+  position: relative;
   @include flex($direction: column, $justify: center, $align: center, $gap: space(5));
 }
 
@@ -382,5 +480,38 @@ hr {
 
 .submit-btn {
   width: remify(300);
+}
+
+.ai-section {
+  margin-top: space(2);
+  display: flex;
+  flex-direction: column;
+  gap: space(2);
+}
+
+.ai-button {
+  align-self: flex-start;
+  padding: space(2) space(4);
+  background-color: color(secondary);
+  color: color(on-secondary);
+  border: none;
+  border-radius: radius(md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.is-loading {
+    opacity: 0.5;
+    cursor: wait;
+  }
+}
+
+.ai-hint {
+  color: color(on-surface-variant);
+  @include typography(sm);
 }
 </style>
