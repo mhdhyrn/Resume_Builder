@@ -1,132 +1,200 @@
 <script setup>
-import { ref, reactive, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
 import TextField from '../TextField.component.vue';
 import TextArea from '../TextArea.component.vue';
 import Button from '../Button.component.vue';
+import { useRouter } from 'vue-router';
+import { workExperienceStore } from '@/stores/work-experience.store';
+import { notify } from '@/plugins/toast';
+import LoadingComponent from '../Loading.component.vue';
 import DatePickerInput from '../DatePickerInput.component.vue';
 
 const router = useRouter();
-const isButtonLoading = ref(false);
+const store = workExperienceStore();
+const isLoading = ref(true);
 
-const getFromSession = (key, fallback = '') => {
-  const storedValue = sessionStorage.getItem(key);
-  return storedValue !== null ? storedValue : fallback;
+const emptyForm = {
+  position: '',
+  companyName: '',
+  country: 'ایران',
+  province: '',
+  city: '',
+  startDate: '',
+  endDate: '',
+  isCurrent: false,
+  description: '',
 };
 
-const formFields = ref({
-  textField: {
-    jobPosition: {
-      value: getFromSession('jobPosition', ''),
-      rules: 'required',
-      label: 'عنوان شغلی',
-    },
-    company: {
-      value: getFromSession('company', ''),
-      rules: 'required',
-      label: 'نام شرکت',
-    },
-    country: {
-      value: getFromSession('country', 'ایران'),
-      rules: 'required',
-      label: 'کشور',
-    },
-    state: {
-      value: getFromSession('state', ''),
-      rules: 'required',
-      label: 'استان',
-    },
-    city: {
-      value: getFromSession('city', ''),
-      rules: 'required',
-      label: 'شهر',
-    },
-  },
-  datePicker: {
-    startingYear: {
-      value: getFromSession('startingYear', ''),
-      rules: 'required',
-      label: 'تاریخ شروع',
-    },
-    finishingYear: {
-      value: getFromSession('finishingYear', ''),
-      rules: 'required',
-      label: 'تاریخ پایان',
-    },
-  },
-  textArea: {
-    tasks: {
-      value: getFromSession('tasks', ''),
-      rules: '',
-      label: 'شرح موقعیت شغلی',
-    },
-  },
+const formFields = ref({ ...emptyForm });
+const editingId = ref(null);
+
+// Load work experiences
+onMounted(async () => {
+  try {
+    await store.fetchWorkExperiences();
+  } catch (error) {
+    notify({
+      message: 'خطا در دریافت اطلاعات',
+      type: 'error',
+    });
+  } finally {
+    isLoading.value = false;
+  }
 });
 
-const saveFormValuesToSession = () => {
-  const fields = formFields.value;
+const resetForm = () => {
+  formFields.value = { ...emptyForm };
+  editingId.value = null;
+};
 
-  for (const category in fields) {
-    for (const key in fields[category]) {
-      const field = fields[category][key];
-      sessionStorage.setItem(key, field.value);
+const editWorkExperience = (experience) => {
+  formFields.value = {
+    position: experience.position || '',
+    companyName: experience.companyName || '',
+    country: experience.country || 'ایران',
+    province: experience.province || '',
+    city: experience.city || '',
+    startDate: experience.startDate || '',
+    endDate: experience.endDate || '',
+    isCurrent: experience.isCurrent || false,
+    description: experience.description || '',
+  };
+  editingId.value = experience.id;
+};
+
+const handleSubmit = async () => {
+  try {
+    if (editingId.value) {
+      await store.updateWorkExperience(editingId.value, formFields.value);
+      notify({
+        message: 'سابقه شغلی با موفقیت ویرایش شد',
+        type: 'success',
+      });
+    } else {
+      await store.createWorkExperience(formFields.value);
+      notify({
+        message: 'سابقه شغلی با موفقیت اضافه شد',
+        type: 'success',
+      });
     }
+    resetForm();
+  } catch (error) {
+    notify({
+      message: error.message || 'خطا در ذخیره اطلاعات',
+      type: 'error',
+    });
   }
 };
 
-const submitButtonConfig = reactive({
-  text: 'ثبت و رفتن به مرحله ی بعد',
-  isDisabled: computed(() => {
-    const isFilled = Object.values(formFields.value).every((group) =>
-      Object.values(group).every((field) => (field.rules !== '' ? field.value !== '' : true)),
-    );
-    return !isFilled;
-  }),
-  isLoading: computed(() => !!isButtonLoading.value),
-});
-
-const handleSubmit = () => {
-  isButtonLoading.value = true;
-  setTimeout(() => {
-    saveFormValuesToSession();
-    router.push({ name: 'ResumeForms', query: { step: 'skills' } });
-    isButtonLoading.value = false;
-  }, 1400);
+const handleDelete = async (id) => {
+  try {
+    await store.deleteWorkExperience(id);
+    notify({
+      message: 'سابقه شغلی با موفقیت حذف شد',
+      type: 'success',
+    });
+    if (editingId.value === id) {
+      resetForm();
+    }
+  } catch (error) {
+    notify({
+      message: error.message || 'خطا در حذف اطلاعات',
+      type: 'error',
+    });
+  }
 };
+
+const handleNext = () => {
+  router.push({ name: 'ResumeForms', query: { step: 'skillRecords' } });
+};
+
+const isFormValid = computed(() => {
+  return (
+    formFields.value.position &&
+    formFields.value.companyName &&
+    formFields.value.startDate &&
+    formFields.value.country &&
+    formFields.value.province &&
+    formFields.value.city
+  );
+});
 </script>
 
 <template>
   <div class="main">
-    <div class="title">سوابق شغلی</div>
-    <form class="form" @submit.prevent="handleSubmit">
-      <div class="grid">
-        <TextField
-          v-for="(field, index) in formFields.textField"
-          :key="index"
-          v-bind="field"
-          v-model="field.value"
-        />
-        <DatePickerInput
-          v-for="(field, index) in formFields.datePicker"
-          :key="index"
-          v-bind="field"
-          v-model="field.value"
-        />
+    <div class="loading-container" v-if="isLoading">
+      <LoadingComponent />
+    </div>
+    <template v-else>
+      <div class="title">سوابق شغلی</div>
+
+      <!-- لیست سوابق شغلی -->
+      <div v-if="store.workExperiences.length > 0" class="experience-list">
+        <div
+          v-for="experience in store.workExperiences"
+          :key="experience.id"
+          class="experience-card"
+        >
+          <div class="experience-info">
+            <h3>{{ experience.position }}</h3>
+            <p>{{ experience.companyName }}</p>
+            <p>
+              {{ experience.startDate }} تا
+              {{ experience.isCurrent ? 'اکنون' : experience.endDate }}
+            </p>
+            <p>{{ experience.city }}، {{ experience.province }}، {{ experience.country }}</p>
+            <p v-if="experience.description" class="description">{{ experience.description }}</p>
+          </div>
+          <div class="experience-actions">
+            <button class="edit-btn" @click="editWorkExperience(experience)">ویرایش</button>
+            <button class="delete-btn" @click="handleDelete(experience.id)">حذف</button>
+          </div>
+        </div>
       </div>
 
-      <div class="textarea-wrapper">
-        <TextArea
-          v-for="(field, index) in formFields.textArea"
-          :key="index"
-          v-bind="field"
-          v-model="field.value"
-        />
-      </div>
+      <!-- فرم -->
+      <form class="form" @submit.prevent="handleSubmit">
+        <div class="grid">
+          <TextField v-model="formFields.position" label="عنوان شغلی" rules="required" />
+          <TextField v-model="formFields.companyName" label="نام شرکت" rules="required" />
+          <DatePickerInput v-model="formFields.startDate" label="تاریخ شروع" rules="required" />
+          <DatePickerInput
+            v-model="formFields.endDate"
+            label="تاریخ پایان"
+            :rules="formFields.isCurrent ? '' : 'required'"
+            :is-disabled="formFields.isCurrent"
+          />
+          <div class="checkbox-wrapper">
+            <label>
+              <input type="checkbox" v-model="formFields.isCurrent" />
+              مشغول به کار هستم
+            </label>
+          </div>
+          <TextField v-model="formFields.country" label="کشور" rules="required" />
+          <TextField v-model="formFields.province" label="استان" rules="required" />
+          <TextField v-model="formFields.city" label="شهر" rules="required" />
+        </div>
 
-      <div class="submit-row">
-        <Button class="submit-btn" v-bind="submitButtonConfig" type="submit" />
-      </div>
-    </form>
+        <div class="textarea-wrapper">
+          <TextArea v-model="formFields.description" label="توضیحات" />
+        </div>
+
+        <div class="form-actions">
+          <Button
+            :text="editingId ? 'ویرایش سابقه شغلی' : 'افزودن سابقه شغلی'"
+            :is-loading="store.createLoading || store.updateLoading"
+            :is-disabled="!isFormValid"
+            type="submit"
+          />
+          <Button v-if="editingId" color="warning" text="انصراف" type="button" @click="resetForm" />
+        </div>
+
+        <!-- دکمه مرحله بعد -->
+        <div class="next-step">
+          <Button text="مرحله بعد" @click="handleNext" />
+        </div>
+      </form>
+    </template>
   </div>
 </template>
 
@@ -136,9 +204,55 @@ const handleSubmit = () => {
   @include flex($direction: column, $justify: center, $align: center, $gap: space(5));
 }
 
+.loading-container {
+  width: 70%;
+  height: 100%;
+}
+
 .title {
   width: 70%;
   @include typography(lg, bold);
+}
+
+.experience-list {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  margin-bottom: space(5);
+}
+
+.experience-card {
+  background-color: color(surface);
+  padding: space(4);
+  border-radius: radius(lg);
+  box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  .experience-info {
+    h3 {
+      @include typography(md, bold);
+      margin-bottom: space(2);
+    }
+
+    p {
+      @include typography(sm);
+      color: color(on-surface-variant);
+      margin-bottom: space(1);
+
+      &.description {
+        margin-top: space(2);
+        white-space: pre-line;
+      }
+    }
+  }
+
+  .experience-actions {
+    display: flex;
+    gap: space(2);
+  }
 }
 
 .form {
@@ -146,10 +260,7 @@ const handleSubmit = () => {
   padding: 2rem;
   border-radius: radius(lg);
   box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
-
-  @include breakpoint(md) {
-    width: 70%;
-  }
+  width: 70%;
 }
 
 .grid {
@@ -158,29 +269,58 @@ const handleSubmit = () => {
   gap: 1rem;
 }
 
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  margin-top: space(4);
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: space(2);
+    cursor: pointer;
+  }
+}
+
 .textarea-wrapper {
-  margin-top: 1.5rem;
+  margin-top: space(4);
 }
 
-.btn-row {
-  margin-top: 1rem;
+.form-actions {
+  width: 50%;
+  margin-top: space(4);
+  display: flex;
+  gap: space(2);
+  justify-content: flex-end;
 }
 
-.divider {
-  margin-top: 2rem;
-  text-align: center;
-  color: #888;
+.next-step {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: space(10);
+
+  button {
+    width: 30%;
+  }
+}
+
+.edit-btn {
+  padding: space(2) space(4);
+  background-color: color(secondary);
+  color: color(on-secondary);
+  border: none;
+  border-radius: radius(md);
   cursor: pointer;
-  transition: color 0.2s;
 }
 
-.submit-row {
-  margin-top: 2rem;
-  text-align: right;
-  @include flex($justify: end, $align: center);
-}
-
-.submit-btn {
-  width: remify(300);
+.delete-btn {
+  padding: space(2) space(4);
+  background-color: color(error);
+  color: color(on-error);
+  border: none;
+  border-radius: radius(md);
+  cursor: pointer;
 }
 </style>
