@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  vue-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4173:4173"
+    restart: unless-stopped
+    networks:
+      - vue-network
+
+networks:
+  vue-network:
+    driver: bridge 
