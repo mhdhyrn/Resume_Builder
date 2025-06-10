@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount, defineModel } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, defineModel, watch } from 'vue';
 import TextField from './TextField.component.vue';
 import SvgLoader from './SvgLoader.component.vue';
 
@@ -45,31 +45,30 @@ const selectRef = ref(null);
 const searchValue = ref('');
 const activeOptionLabel = ref('');
 
-// Find initial label when component mounts
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-
-  // Set initial label if value exists (including false values)
+const updateActiveLabel = () => {
   if (modelValue.value !== undefined && modelValue.value !== '') {
     const option = props.options.find((opt) => (opt.value ?? opt) === modelValue.value);
     if (option) {
       activeOptionLabel.value = option.label ?? option;
     }
+  } else {
+    activeOptionLabel.value = '';
   }
-});
+};
+
+// Watch for changes in modelValue
+watch(modelValue, updateActiveLabel, { immediate: true });
+
+// Watch for changes in options (in case they're loaded asynchronously)
+watch(() => props.options, updateActiveLabel, { immediate: true });
 
 const inputValue = computed({
   get() {
     if (isDropdownOpen.value) return searchValue.value;
-    else {
-      resetSearchValue();
-      if (modelValue.value === undefined || modelValue.value === '') resetActiveOptionLabel();
-      return activeOptionLabel.value;
-    }
+    return activeOptionLabel.value;
   },
   set(newValue) {
     if (isDropdownOpen.value) searchValue.value = newValue;
-    else modelValue.value = newValue;
   },
 });
 
@@ -78,7 +77,8 @@ const dropdownPosition = ref('bottom');
 const filteredOptions = computed(() => {
   if (props.isSearchable) {
     return props.options.filter((option) => {
-      return `${option.label ?? option}`.startsWith(searchValue.value);
+      const label = option.label ?? option;
+      return label.toString().toLowerCase().includes(searchValue.value.toLowerCase());
     });
   } else {
     return props.options;
@@ -86,7 +86,6 @@ const filteredOptions = computed(() => {
 });
 
 const resetSearchValue = () => (searchValue.value = '');
-const resetActiveOptionLabel = () => (activeOptionLabel.value = '');
 
 const toggleDropdown = (event) => {
   if (props.isDisabled) return;
@@ -94,8 +93,11 @@ const toggleDropdown = (event) => {
     calculateDropDownPosition();
   }
   isDropdownOpen.value = !isDropdownOpen.value;
-  if (!isDropdownOpen.value && event) {
-    event.stopPropagation();
+  if (!isDropdownOpen.value) {
+    resetSearchValue();
+    if (event) {
+      event.stopPropagation();
+    }
   }
 };
 
@@ -129,11 +131,15 @@ const isOptionActive = (option) => {
 };
 
 const handleClickOutside = (event) => {
-  if (!selectRef.value.contains(event.target)) isDropdownOpen.value = false;
+  if (selectRef.value && !selectRef.value.contains(event.target)) {
+    isDropdownOpen.value = false;
+    resetSearchValue();
+  }
 };
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  updateActiveLabel();
 });
 
 onBeforeUnmount(() => {
@@ -157,7 +163,6 @@ onBeforeUnmount(() => {
     >
       <template #appendIcon>
         <div v-if="isLoading" class="u-select__loading" />
-
         <SvgLoader
           name="arrow-down"
           class="arrow-icon"
@@ -175,10 +180,7 @@ onBeforeUnmount(() => {
       >
         <template v-for="option in filteredOptions" :key="option.value ?? option">
           <div
-            :class="[
-              'option-item',
-              { 'option-item--selected': isOptionActive(option.value ?? option) },
-            ]"
+            :class="['option-item', { 'option-item--selected': isOptionActive(option) }]"
             @click="onOptionClick(option)"
           >
             {{ option.label ?? option }}

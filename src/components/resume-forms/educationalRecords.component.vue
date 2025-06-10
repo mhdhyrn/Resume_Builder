@@ -1,130 +1,248 @@
 <script setup>
+import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import TextField from '../TextField.component.vue';
-import TextArea from '../TextArea.component.vue';
 import Button from '../Button.component.vue';
-import DatePickerInput from '../DatePickerInput.component.vue';
+import DropdownComponent from '../Dropdown.component.vue';
 import { useRouter } from 'vue-router';
+import { educationStore } from '@/stores/education.store';
+import { notify } from '@/plugins/toast';
+import LoadingComponent from '../Loading.component.vue';
 
 const router = useRouter();
+const store = educationStore();
+const isLoading = ref(true);
 
-const isButtonLoading = ref(false);
-
-const submitButtonConfig = reactive({
-  text: 'ثبت و رفتن به مرحله ی بعد',
-  isDisabled: computed(() => {
-    const isFilled = Object.values(formFields.value).every((fields) =>
-      Object.values(fields).every((field) => (field.rules !== '' ? field.value !== '' : true)),
-    );
-    return !isFilled;
-  }),
-  isLoading: computed(() => !!isButtonLoading.value),
-});
-
-const formFields = ref({
-  datePicker: {
-    startingYear: {
-      value: '',
-      rules: 'required',
-      label: 'تاریخ شروع',
-    },
-    finishingYear: {
-      value: '',
-      rules: 'required',
-      label: 'تاریخ پایان',
-    },
-  },
-  textArea: {
-    description: {
-      value: '',
-      rules: '',
-      label: 'شرح بیشتر',
-    },
-  },
-  textField: {
-    level: {
-      value: '',
-      rules: 'required',
-      label: 'سطح',
-    },
-    fieldOfStudy: {
-      value: '',
-      rules: 'required',
-      label: 'حوزه تحصیل',
-    },
-    branch: {
-      value: '',
-      rules: 'required',
-      label: 'شاخه',
-    },
-    educationInstituteTitle: {
-      value: '',
-      rules: 'required',
-      label: 'نام مرکز تحصیلی',
-    },
-    average: {
-      value: '',
-      rules: 'required',
-      label: 'معدل',
-    },
-    country: {
-      value: 'ایران',
-      rules: 'required',
-      label: 'کشور',
-    },
-    city: {
-      value: '',
-      rules: 'required',
-      label: 'شهر',
-    },
-    state: {
-      value: '',
-      rules: 'required',
-      label: 'استان',
-    },
-  },
-});
-
-const handleSubmit = () => {
-  isButtonLoading.value = true;
-  setTimeout(() => {
-    router.push({ name: 'ResumeForms', query: { step: 'experienceRecords' } });
-    isButtonLoading.value = false;
-  }, 1400);
+const emptyForm = {
+  degree: '',
+  major: '',
+  universityType: '',
+  universityName: '',
+  grade: '',
+  entranceYear: '',
+  graduationYear: '',
+  country: 'ایران',
+  province: '',
+  city: '',
+  isCurrent: false,
 };
+
+const formFields = ref({ ...emptyForm });
+const editingId = ref(null);
+
+const universityTypes = [
+  { label: 'دولتی', value: 'public' },
+  { label: 'آزاد', value: 'private' },
+  { label: 'پیام نور', value: 'payam_noor' },
+  { label: 'غیرانتفاعی', value: 'non_profit' },
+];
+
+const degrees = [
+  { label: 'دیپلم', value: 'diploma' },
+  { label: 'کاردانی', value: 'associate' },
+  { label: 'کارشناسی', value: 'bachelor' },
+  { label: 'کارشناسی ارشد', value: 'master' },
+  { label: 'دکتری', value: 'phd' },
+];
+
+// Helper functions
+const getDegreeLabel = (value) => {
+  const degree = degrees.find((d) => d.value === value);
+  return degree ? degree.label : value;
+};
+
+const getUniversityTypeLabel = (value) => {
+  const type = universityTypes.find((t) => t.value === value);
+  return type ? type.label : value;
+};
+
+// Load educations
+onMounted(async () => {
+  try {
+    await store.fetchEducations();
+  } catch (error) {
+    notify({
+      message: 'خطا در دریافت اطلاعات',
+      type: 'error',
+    });
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+const resetForm = () => {
+  formFields.value = { ...emptyForm };
+  editingId.value = null;
+};
+
+const editEducation = (education) => {
+  formFields.value = {
+    degree: education.degree || '',
+    major: education.major || '',
+    universityType: education.universityType || '',
+    universityName: education.universityName || '',
+    grade: education.grade || '',
+    entranceYear: education.entranceYear?.toString() || '',
+    graduationYear: education.graduationYear?.toString() || '',
+    country: education.country || 'ایران',
+    province: education.province || '',
+    city: education.city || '',
+    isCurrent: education.isCurrent || false,
+  };
+
+  // Force update dropdown values
+  nextTick(() => {
+    const degreeOption = degrees.find((d) => d.value === education.degree);
+    const universityTypeOption = universityTypes.find((t) => t.value === education.universityType);
+
+    if (degreeOption) {
+      formFields.value.degree = degreeOption.value;
+    }
+
+    if (universityTypeOption) {
+      formFields.value.universityType = universityTypeOption.value;
+    }
+  });
+
+  editingId.value = education.id;
+};
+
+const handleSubmit = async () => {
+  try {
+    const formData = {
+      ...formFields.value,
+      entranceYear: parseInt(formFields.value.entranceYear),
+      graduationYear: formFields.value.graduationYear
+        ? parseInt(formFields.value.graduationYear)
+        : null,
+    };
+
+    if (editingId.value) {
+      await store.updateEducation(editingId.value, formData);
+      notify({
+        message: 'سابقه تحصیلی با موفقیت ویرایش شد',
+        type: 'success',
+      });
+    } else {
+      await store.createEducation(formData);
+      notify({
+        message: 'سابقه تحصیلی با موفقیت اضافه شد',
+        type: 'success',
+      });
+    }
+    resetForm();
+  } catch (error) {
+    notify({
+      message: error.message || 'خطا در ذخیره اطلاعات',
+      type: 'error',
+    });
+  }
+};
+
+const handleDelete = async (id) => {
+  try {
+    await store.deleteEducation(id);
+    notify({
+      message: 'سابقه تحصیلی با موفقیت حذف شد',
+      type: 'success',
+    });
+    if (editingId.value === id) {
+      resetForm();
+    }
+  } catch (error) {
+    notify({
+      message: error.message || 'خطا در حذف اطلاعات',
+      type: 'error',
+    });
+  }
+};
+
+const handleNext = () => {
+  router.push({ name: 'ResumeForms', query: { step: 'experienceRecords' } });
+};
+
+const isFormValid = computed(() => {
+  return (
+    formFields.value.degree &&
+    formFields.value.major &&
+    formFields.value.universityType &&
+    formFields.value.universityName &&
+    formFields.value.entranceYear &&
+    formFields.value.country &&
+    formFields.value.province &&
+    formFields.value.city
+  );
+});
 </script>
 
 <template>
   <div class="main">
-    <div class="title">سوابق تحصیلی</div>
-    <form class="form" @submit.prevent="handleSubmit">
-      <div class="grid">
-        <TextField
-          v-for="(field, index) in formFields.textField"
-          :key="index"
-          v-bind="field"
-          v-model="field.value"
-        />
-        <DatePickerInput
-          v-for="(field, index) in formFields.datePicker"
-          :key="index"
-          v-bind="field"
-          v-model="field.value"
-        />
+    <div class="loading-container" v-if="isLoading">
+      <LoadingComponent />
+    </div>
+    <template v-else>
+      <div class="title">سوابق تحصیلی</div>
+
+      <!-- لیست سوابق تحصیلی -->
+      <div v-if="store.educations.length > 0" class="education-list">
+        <div v-for="education in store.educations" :key="education.id" class="education-card">
+          <div class="education-info">
+            <h3>{{ education.universityName }}</h3>
+            <p>{{ education.major }} - {{ getDegreeLabel(education.degree) }}</p>
+            <p>{{ education.entranceYear }} تا {{ education.graduationYear }}</p>
+            <p>{{ getUniversityTypeLabel(education.universityType) }}</p>
+          </div>
+          <div class="education-actions">
+            <button class="edit-btn" @click="editEducation(education)">ویرایش</button>
+            <button class="delete-btn" @click="handleDelete(education.id)">حذف</button>
+          </div>
+        </div>
       </div>
 
-      <div class="textarea-wrapper">
-        <TextArea
-          v-for="(field, index) in formFields.textArea"
-          :key="index"
-          v-bind="field"
-          v-model="field.value"
-        />
-      </div>
+      <!-- فرم -->
+      <form class="form" @submit.prevent="handleSubmit">
+        <div class="grid">
+          <DropdownComponent
+            v-model="formFields.degree"
+            :options="degrees"
+            label="مقطع تحصیلی"
+            rules="required"
+          />
+          <TextField v-model="formFields.major" label="رشته تحصیلی" rules="required" />
+          <DropdownComponent
+            v-model="formFields.universityType"
+            :options="universityTypes"
+            label="نوع دانشگاه"
+            rules="required"
+          />
+          <TextField v-model="formFields.universityName" label="نام دانشگاه" rules="required" />
+          <TextField v-model="formFields.grade" label="معدل" />
+          <TextField
+            v-model="formFields.entranceYear"
+            label="سال ورود"
+            type="number"
+            rules="required"
+          />
+          <TextField v-model="formFields.graduationYear" label="سال فراغت از تحصیل" type="number" />
+          <TextField v-model="formFields.country" label="کشور" rules="required" />
+          <TextField v-model="formFields.province" label="استان" rules="required" />
+          <TextField v-model="formFields.city" label="شهر" rules="required" />
+        </div>
 
-      <div class="submit-row">
-        <Button class="submit-btn" v-bind="submitButtonConfig" type="submit" />
-      </div>
-    </form>
+        <div class="form-actions">
+          <Button
+            :text="editingId ? 'ویرایش سابقه تحصیلی' : 'افزودن سابقه تحصیلی'"
+            :is-loading="store.createLoading || store.updateLoading"
+            :is-disabled="!isFormValid"
+            type="submit"
+          />
+          <Button v-if="editingId" color="warning" text="انصراف" type="button" @click="resetForm" />
+        </div>
+        <!-- دکمه مرحله بعد -->
+        <div class="next-step">
+          <Button text="مرحله بعد" @click="handleNext" />
+        </div>
+      </form>
+    </template>
   </div>
 </template>
 
@@ -134,9 +252,50 @@ const handleSubmit = () => {
   @include flex($direction: column, $justify: center, $align: center, $gap: space(5));
 }
 
+.loading-container {
+  width: 70%;
+  height: 100%;
+}
+
 .title {
   width: 70%;
   @include typography(lg, bold);
+}
+
+.education-list {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  margin-bottom: space(5);
+}
+
+.education-card {
+  background-color: color(surface);
+  padding: space(4);
+  border-radius: radius(lg);
+  box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .education-info {
+    h3 {
+      @include typography(md, bold);
+      margin-bottom: space(2);
+    }
+
+    p {
+      @include typography(sm);
+      color: color(on-surface-variant);
+      margin-bottom: space(1);
+    }
+  }
+
+  .education-actions {
+    display: flex;
+    gap: space(2);
+  }
 }
 
 .form {
@@ -144,10 +303,7 @@ const handleSubmit = () => {
   padding: 2rem;
   border-radius: radius(lg);
   box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
-
-  @include breakpoint(md) {
-    width: 70%;
-  }
+  width: 70%;
 }
 
 .grid {
@@ -156,29 +312,40 @@ const handleSubmit = () => {
   gap: 1rem;
 }
 
-.textarea-wrapper {
-  margin-top: 1.5rem;
+.form-actions {
+  width: 50%;
+  margin-top: space(4);
+  display: flex;
+  gap: space(2);
+  justify-content: flex-end;
 }
 
-.btn-row {
-  margin-top: 1rem;
+.next-step {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: space(10);
+
+  button {
+    width: 30%;
+  }
 }
 
-.divider {
-  margin-top: 2rem;
-  text-align: center;
-  color: #888;
+.edit-btn {
+  padding: space(2) space(4);
+  background-color: color(secondary);
+  color: color(on-secondary);
+  border: none;
+  border-radius: radius(md);
   cursor: pointer;
-  transition: color 0.2s;
 }
 
-.submit-row {
-  margin-top: 2rem;
-  text-align: right;
-  @include flex($justify: end, $align: center);
-}
-
-.submit-btn {
-  width: remify(300);
+.delete-btn {
+  padding: space(2) space(4);
+  background-color: color(error);
+  color: color(on-error);
+  border: none;
+  border-radius: radius(md);
+  cursor: pointer;
 }
 </style>
