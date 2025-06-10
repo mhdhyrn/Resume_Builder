@@ -8,6 +8,8 @@ services:
     ports:
       - "4173:4173"
     restart: unless-stopped
+    mem_limit: 300m
+    memswap_limit: 500m
     networks:
       - vue-network
 
