@@ -1,209 +1,168 @@
-<!-- <template>
-  <div class="main">
-    <div class="title">مهارت ها</div>
-    <form class="form" @submit.prevent="handleSubmit">
-      <div class="grid">
-        <TextField label="نام مهارت" v-model="form.skillName" />
-        <Dropdown :options="dropdownItems" label="میزان تسلط" v-model="form.skillLevel" />
-      </div>
-
-      <div class="submit-row">
-        <Button class="submit-btn" v-bind="submitButtonConfig" type="submit"
-          >ثبت و رفتن به مرحله ی بعد</Button
-        >
-      </div>
-    </form>
-  </div>
-</template>
-
 <script setup>
+import { ref, computed, onMounted } from 'vue';
 import TextField from '../TextField.component.vue';
-import TextArea from '../TextArea.component.vue';
 import Button from '../Button.component.vue';
-import DatePickerInput from '../DatePickerInput.component.vue';
-import CheckBox from '../CheckBox.component.vue';
 import { useRouter } from 'vue-router';
-import Dropdown from '../Dropdown.component.vue';
+import { skillStore } from '@/stores/skill.store';
+import { notify } from '@/plugins/toast';
+import LoadingComponent from '../Loading.component.vue';
+import DropdownComponent from '../Dropdown.component.vue';
 
 const router = useRouter();
+const store = skillStore();
+const isLoading = ref(true);
 
-const isButtonLoading = ref(false);
-
-
-const dropdownItems = ['پایین', 'متوسط', 'خوب', 'عالی'];
-
-const submitButtonConfig = reactive({
-  isDisabled: computed(() => {
-    const isFilled = Object.values(form.value).every((value) => value !== '');
-    return !isFilled;
-  }),
-  isLoading: computed(() => !!isButtonLoading.value),
-});
-
-const form = ref({
-  skillName: sessionStorage.getItem('skillName') || '',
-  skillLevel: sessionStorage.getItem('skillLevel') || '',
-});
-
-const handleSubmit = () => {
-  isButtonLoading.value = true;
-  setTimeout(() => {
-    sessionStorage.setItem('skillName', form.value.skillName);
-    sessionStorage.setItem('skillLevel', form.value.skillLevel);
-    router.push({ name: 'ResumeForms', query: { step: 'final' } });
-    isButtonLoading.value = false;
-  }, 900);
+const emptyForm = {
+  name: '',
+  proficiency: '',
 };
-</script>
 
-<style lang="scss" scoped>
-.main {
-  width: 100%;
-  @include flex($direction: column, $justify: center, $align: center, $gap: space(5));
-}
+const formFields = ref({ ...emptyForm });
+const editingId = ref(null);
 
-.title {
-  width: 70%;
-  @include typography(lg, bold);
-}
+const proficiencyLevels = [
+  { label: 'مبتدی', value: 'beginner' },
+  { label: 'متوسط', value: 'intermediate' },
+  { label: 'پیشرفته', value: 'advanced' },
+  { label: 'حرفه‌ای', value: 'expert' },
+];
 
-.form {
-  background-color: color(surface);
-  padding: 2rem;
-  border-radius: radius(lg);
-  box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
+// Helper function to get proficiency label
+const getProficiencyLabel = (value) => {
+  const level = proficiencyLevels.find((l) => l.value === value);
+  return level ? level.label : value;
+};
 
-  @include breakpoint(md) {
-    width: 70%;
+// Load skills
+onMounted(async () => {
+  try {
+    await store.fetchSkills();
+  } catch (error) {
+    notify({
+      message: 'خطا در دریافت اطلاعات',
+      type: 'error',
+    });
+  } finally {
+    isLoading.value = false;
   }
-}
+});
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-}
+const resetForm = () => {
+  formFields.value = { ...emptyForm };
+  editingId.value = null;
+};
 
-.textarea-wrapper {
-  margin-top: 1.5rem;
-}
+const editSkill = (skill) => {
+  formFields.value = {
+    name: skill.name || '',
+    proficiency: skill.proficiency || '',
+  };
+  editingId.value = skill.id;
+};
 
-.btn-row {
-  margin-top: 1rem;
-}
+const handleSubmit = async () => {
+  try {
+    if (editingId.value) {
+      await store.updateSkill(editingId.value, formFields.value);
+      notify({
+        message: 'مهارت با موفقیت ویرایش شد',
+        type: 'success',
+      });
+    } else {
+      await store.createSkill(formFields.value);
+      notify({
+        message: 'مهارت با موفقیت اضافه شد',
+        type: 'success',
+      });
+    }
+    resetForm();
+  } catch (error) {
+    notify({
+      message: error.message || 'خطا در ذخیره اطلاعات',
+      type: 'error',
+    });
+  }
+};
 
-.divider {
-  margin-top: 2rem;
-  text-align: center;
-  color: #888;
-  cursor: pointer;
-  transition: color 0.2s;
-}
+const handleDelete = async (id) => {
+  try {
+    await store.deleteSkill(id);
+    notify({
+      message: 'مهارت با موفقیت حذف شد',
+      type: 'success',
+    });
+    if (editingId.value === id) {
+      resetForm();
+    }
+  } catch (error) {
+    notify({
+      message: error.message || 'خطا در حذف اطلاعات',
+      type: 'error',
+    });
+  }
+};
 
-.submit-row {
-  margin-top: 2rem;
-  text-align: right;
-  @include flex($justify: end, $align: center);
-}
+const handleNext = () => {
+  router.push({ name: 'ResumeForms', query: { step: 'languageRecords' } });
+};
 
-.submit-btn {
-  width: remify(300);
-}
-</style> -->
+const isFormValid = computed(() => {
+  return formFields.value.name && formFields.value.proficiency;
+});
+</script>
 
 <template>
   <div class="main">
-    <div class="title">مهارت‌ها</div>
-    <form class="form" @submit.prevent="handleSubmit">
-      <div v-for="(skill, index) in skills" :key="index" class="grid">
-        <TextField label="نام مهارت" v-model="skill.skillName" />
-        <Dropdown :options="dropdownItems" label="میزان تسلط" v-model="skill.skillLevel" />
-        <div class="btn-row">
-          <Button
-            color="error"
-            class="delete-button"
-            type="button"
-            @click="removeSkill(index)"
-            v-if="skills.length > 1"
-            >حذف</Button
-          >
+    <div class="loading-container" v-if="isLoading">
+      <LoadingComponent />
+    </div>
+    <template v-else>
+      <div class="title">مهارت‌ها</div>
+
+      <!-- لیست مهارت‌ها -->
+      <div v-if="store.skills.length > 0" class="skills-list">
+        <div v-for="skill in store.skills" :key="skill.id" class="skill-card">
+          <div class="skill-info">
+            <h3>{{ skill.name }}</h3>
+            <p>{{ getProficiencyLabel(skill.proficiency) }}</p>
+          </div>
+          <div class="skill-actions">
+            <button class="edit-btn" @click="editSkill(skill)">ویرایش</button>
+            <button class="delete-btn" @click="handleDelete(skill.id)">حذف</button>
+          </div>
         </div>
       </div>
 
-      <div class="btn-row">
-        <Button type="button" @click="addSkill">افزودن مهارت</Button>
-      </div>
+      <!-- فرم -->
+      <form class="form" @submit.prevent="handleSubmit">
+        <div class="grid">
+          <TextField v-model="formFields.name" label="نام مهارت" rules="required" />
+          <DropdownComponent
+            v-model="formFields.proficiency"
+            :options="proficiencyLevels"
+            label="سطح مهارت"
+            rules="required"
+          />
+        </div>
 
-      <div class="submit-row">
-        <Button class="submit-btn" v-bind="submitButtonConfig" type="submit">
-          ثبت و رفتن به مرحله‌ی بعد
-        </Button>
-      </div>
-    </form>
+        <div class="form-actions">
+          <Button
+            :text="editingId ? 'ویرایش مهارت' : 'افزودن مهارت'"
+            :is-loading="store.createLoading || store.updateLoading"
+            :is-disabled="!isFormValid"
+            type="submit"
+          />
+          <Button v-if="editingId" color="warning" text="انصراف" type="button" @click="resetForm" />
+        </div>
+
+        <!-- دکمه مرحله بعد -->
+        <div class="next-step">
+          <Button text="مرحله بعد" @click="handleNext" />
+        </div>
+      </form>
+    </template>
   </div>
 </template>
-
-<script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-
-import TextField from '../TextField.component.vue';
-import Dropdown from '../Dropdown.component.vue';
-import Button from '../Button.component.vue';
-
-const router = useRouter();
-const isButtonLoading = ref(false);
-const dropdownItems = ['پایین', 'متوسط', 'خوب', 'عالی'];
-
-// مقدار پیش‌فرض برای یک مهارت
-const defaultSkill = () => ({
-  skillName: '',
-  skillLevel: '',
-});
-
-// تلاش برای بازیابی از sessionStorage
-const loadSkillsFromSession = () => {
-  const saved = sessionStorage.getItem('skills');
-  try {
-    return saved ? JSON.parse(saved) : [defaultSkill()];
-  } catch {
-    return [defaultSkill()];
-  }
-};
-
-const skills = ref(loadSkillsFromSession());
-
-// دکمه افزودن مهارت
-const addSkill = () => {
-  skills.value.push(defaultSkill());
-};
-
-// حذف مهارت
-const removeSkill = (index) => {
-  if (skills.value.length > 1) {
-    skills.value.splice(index, 1);
-  }
-};
-
-// وضعیت دکمه ثبت
-const submitButtonConfig = reactive({
-  isDisabled: computed(() => skills.value.some((s) => !s.skillName.trim() || !s.skillLevel.trim())),
-  isLoading: computed(() => isButtonLoading.value),
-});
-
-// هندل سابمیت
-const handleSubmit = () => {
-  isButtonLoading.value = true;
-
-  setTimeout(() => {
-    // ذخیره در sessionStorage
-    sessionStorage.setItem('skills', JSON.stringify(skills.value));
-
-    router.push({ name: 'ResumeForms', query: { step: 'final' } });
-    isButtonLoading.value = false;
-  }, 900);
-};
-</script>
 
 <style lang="scss" scoped>
 .main {
@@ -211,9 +170,49 @@ const handleSubmit = () => {
   @include flex($direction: column, $justify: center, $align: center, $gap: space(5));
 }
 
+.loading-container {
+  width: 70%;
+  height: 100%;
+}
+
 .title {
   width: 70%;
   @include typography(lg, bold);
+}
+
+.skills-list {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  margin-bottom: space(5);
+}
+
+.skill-card {
+  background-color: color(surface);
+  padding: space(4);
+  border-radius: radius(lg);
+  box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .skill-info {
+    h3 {
+      @include typography(md, bold);
+      margin-bottom: space(2);
+    }
+
+    p {
+      @include typography(sm);
+      color: color(on-surface-variant);
+    }
+  }
+
+  .skill-actions {
+    display: flex;
+    gap: space(2);
+  }
 }
 
 .form {
@@ -221,10 +220,7 @@ const handleSubmit = () => {
   padding: 2rem;
   border-radius: radius(lg);
   box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
-
-  @include breakpoint(md) {
-    width: 70%;
-  }
+  width: 70%;
 }
 
 .grid {
@@ -233,38 +229,40 @@ const handleSubmit = () => {
   gap: 1rem;
 }
 
-.textarea-wrapper {
-  margin-top: 1.5rem;
+.form-actions {
+  width: 50%;
+  margin-top: space(4);
+  display: flex;
+  gap: space(2);
+  justify-content: flex-end;
 }
 
-.btn-row {
-  margin-top: 1rem;
+.next-step {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: space(10);
+
+  button {
+    width: 30%;
+  }
 }
 
-.divider {
-  margin-top: 2rem;
-  text-align: center;
-  color: #888;
+.edit-btn {
+  padding: space(2) space(4);
+  background-color: color(secondary);
+  color: color(on-secondary);
+  border: none;
+  border-radius: radius(md);
   cursor: pointer;
-  transition: color 0.2s;
 }
 
-.submit-row {
-  margin-top: 2rem;
-  text-align: right;
-  @include flex($justify: end, $align: center);
-}
-
-.submit-btn {
-  width: remify(300);
-}
-
-.btn-row {
-  width: 10%;
-}
-
-.delete-button {
-  width: 70px;
-  margin-top: -15px;
+.delete-btn {
+  padding: space(2) space(4);
+  background-color: color(error);
+  color: color(on-error);
+  border: none;
+  border-radius: radius(md);
+  cursor: pointer;
 }
 </style>
