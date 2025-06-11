@@ -19,14 +19,29 @@
       </div>
 
       <div class="submit-row">
-        <Button
-          class="submit-btn"
-          v-bind="submitButtonConfig"
-          type="submit"
-          @click="handleSubmit"
-        />
+        <Button class="submit-btn" v-bind="submitButtonConfig" @click="handleSubmit" />
       </div>
     </div>
+
+    <Modal :is-open="isShareModalOpen" title="اشتراک‌گذاری رزومه" @close="handleCloseShareModal">
+      <div class="share-content">
+        <p>رزومه شما با موفقیت دانلود شد!</p>
+        <p>آیا می‌خواهید پروفایل خود را با دیگران به اشتراک بگذارید؟</p>
+        <p>با اشتراک‌گذاری پروفایل، دیگران می‌توانند رزومه شما را مشاهده کنند.</p>
+      </div>
+      <template #footer>
+        <Button
+          text="اشتراک‌گذاری پروفایل"
+          @click="
+            () => {
+              // اینجا می‌تونیم به صفحه اشتراک‌گذاری هدایت کنیم
+              handleCloseShareModal();
+            }
+          "
+        />
+        <Button text="بستن" variant="outline" @click="handleCloseShareModal" />
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -34,10 +49,13 @@
 import { ref, computed } from 'vue';
 import Button from '../Button.component.vue';
 import LoadingComponent from '../Loading.component.vue';
+import Modal from '../Modal.component.vue';
 import templates from '@/constants/templates.constant';
+import { downloadResume } from '@/services/api/resume.service';
 
 const selectedTemplate = ref(null);
 const isButtonLoading = ref(false);
+const isShareModalOpen = ref(false);
 
 const submitButtonConfig = reactive({
   text: 'دانلود رزومه',
@@ -45,18 +63,44 @@ const submitButtonConfig = reactive({
   isLoading: computed(() => isButtonLoading.value),
 });
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!selectedTemplate.value) return;
 
-  isButtonLoading.value = true;
-  // TODO: اینجا باید به API درخواست دانلود رزومه ارسال شود
-  setTimeout(() => {
+  try {
+    isButtonLoading.value = true;
+    const response = await downloadResume(selectedTemplate.value.id);
+
+    // ایجاد Blob از داده‌های دریافتی
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+
+    // ایجاد لینک دانلود و کلیک روی آن
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'resume.pdf';
+    document.body.appendChild(link);
+    link.click();
+
+    // پاکسازی
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+
+    // نمایش مودال اشتراک‌گذاری
+    isShareModalOpen.value = true;
+  } catch (error) {
+    console.error('خطا در دانلود رزومه:', error);
+    // اینجا می‌تونیم یک نوتیفیکیشن خطا نمایش بدیم
+  } finally {
     isButtonLoading.value = false;
-  }, 1000);
+  }
 };
 
 const selectTemplate = (template) => {
   selectedTemplate.value = template;
+};
+
+const handleCloseShareModal = () => {
+  isShareModalOpen.value = false;
 };
 </script>
 
@@ -137,5 +181,21 @@ const selectTemplate = (template) => {
 
 .submit-btn {
   width: remify(300);
+}
+
+.share-content {
+  text-align: center;
+  @include flex($direction: column, $gap: space(3));
+
+  p {
+    @include typography(md);
+    color: color(on-surface);
+    margin: 0;
+
+    &:first-child {
+      @include typography(lg, bold);
+      color: color(primary);
+    }
+  }
 }
 </style>

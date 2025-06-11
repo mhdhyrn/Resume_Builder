@@ -1,6 +1,4 @@
 <script setup>
-import Button from '@/components/Button.component.vue';
-
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -10,100 +8,124 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  description: {
-    type: String,
-    default: '',
-  },
-  okText: {
-    type: String,
-    default: 'تایید',
-  },
-  cancelText: {
-    type: String,
-    default: 'بیخیال',
-  },
 });
 
-const emit = defineEmits(['ok', 'cancel']);
+const emit = defineEmits(['close']);
 
-const handleOk = () => {
-  emit('ok');
-};
-
-const handleCancel = () => {
-  emit('cancel');
+const handleClose = () => {
+  emit('close');
 };
 </script>
 
 <template>
-  <Transition name="fade">
-    <div v-if="isOpen" class="modal">
-      <div class="modal__backdrop" @click="handleCancel" />
-      <div class="modal__content">
-        <h3 class="modal__title">{{ title }}</h3>
-        <p class="modal__description">
-          {{ description }}
-        </p>
-        <div class="modal__actions">
-          <Button :text="okText" @click="handleOk" />
-          <Button :text="cancelText" variant="outline" color="error" @click="handleCancel" />
+  <Teleport to="body">
+    <Transition name="modal">
+      <div v-if="isOpen" class="modal-overlay" @click="handleClose">
+        <div class="modal" @click.stop>
+          <div class="modal-header">
+            <h2 class="modal-title">{{ title }}</h2>
+            <button class="close-button" @click="handleClose">&times;</button>
+          </div>
+          <div class="modal-content">
+            <slot></slot>
+          </div>
+          <div class="modal-footer">
+            <slot name="footer">
+              <button class="modal-button" @click="handleClose">بستن</button>
+            </slot>
+          </div>
         </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
+  </Teleport>
 </template>
 
 <style lang="scss" scoped>
-.auth-modal,
-.modal {
+.modal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
-  @include flex($justify: center, $align: center);
+}
 
-  &__backdrop {
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-  }
+.modal {
+  background: color(surface);
+  border-radius: radius(lg);
+  padding: space(4);
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+}
 
-  &__content {
-    position: relative;
-    width: 90%;
-    max-width: remify(400);
-    background-color: color(surface-container);
-    border-radius: radius(lg);
-    border: 1px solid color(outline);
-    padding: space(6);
-    @include flex($direction: column, $gap: space(4));
-  }
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: space(4);
+}
 
-  &__title {
-    color: color(on-surface);
-    @include typography('xl', 'bold');
-  }
+.modal-title {
+  margin: 0;
+  @include typography(lg, bold);
+}
 
-  &__description {
-    color: color(on-surface-variant);
-    @include typography('md', 'medium');
-  }
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: color(on-surface);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: radius(sm);
+  transition: background-color 0.3s;
 
-  &__actions {
-    @include flex($justify: flex-end, $gap: space(2));
+  &:hover {
+    background-color: color(disabled-soft);
   }
 }
 
-.fade {
-  &-enter-active,
-  &-leave-active {
-    transition: all 0.3s ease;
-  }
+.modal-content {
+  margin-bottom: space(4);
+}
 
-  &-enter-from,
-  &-leave-to {
-    opacity: 0;
-    transform: scale(0.9);
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: space(2);
+}
+
+.modal-button {
+  padding: space(2) space(4);
+  background-color: color(primary);
+  color: color(on-primary);
+  border: none;
+  border-radius: radius(md);
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: darken(black, 10%);
   }
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 </style>
