@@ -6,9 +6,13 @@ import { useRouter } from 'vue-router';
 import { certificateStore } from '@/stores/certificate.store';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
+import { useProgressStore } from '@/stores/progress.store';
+import { useProgressbarStore } from '@/stores/progressbar.store';
 
 const router = useRouter();
 const store = certificateStore();
+const progressStore = useProgressStore();
+const progressbarStore = useProgressbarStore();
 const isLoading = ref(true);
 
 const emptyForm = {
@@ -60,6 +64,9 @@ const handleSubmit = async () => {
       });
     } else {
       await store.createCertificate(formFields.value);
+      if (store.certificates.length === 1) {
+        await progressbarStore.updateProgressbar();
+      }
       notify({
         message: 'گواهینامه با موفقیت اضافه شد',
         type: 'success',
@@ -77,6 +84,9 @@ const handleSubmit = async () => {
 const handleDelete = async (id) => {
   try {
     await store.deleteCertificate(id);
+    if (store.certificates.length === 0) {
+      await progressbarStore.updateProgressbar();
+    }
     notify({
       message: 'گواهینامه با موفقیت حذف شد',
       type: 'success',
@@ -99,6 +109,16 @@ const handleNext = () => {
 const isFormValid = computed(() => {
   return formFields.value.title && formFields.value.institute;
 });
+
+const saveCertificate = async () => {
+  try {
+    const response = await store.updateCertificates(store.certificates);
+    progressStore.checkSectionCompletion('certificates', response.data);
+    // ... rest of the save logic ...
+  } catch (error) {
+    console.error('خطا در ذخیره گواهینامه‌ها:', error);
+  }
+};
 </script>
 
 <template>
@@ -112,13 +132,19 @@ const isFormValid = computed(() => {
       <!-- لیست گواهینامه‌ها -->
       <div v-if="store.certificates.length > 0" class="certificates-list">
         <TransitionGroup name="list">
-          <div v-for="certificate in store.certificates" :key="certificate.id" class="certificate-card">
+          <div
+            v-for="certificate in store.certificates"
+            :key="certificate.id"
+            class="certificate-card"
+          >
             <div class="certificate-info">
               <h3>{{ certificate.title }}</h3>
               <p>{{ certificate.institute }}</p>
               <p v-if="certificate.date">{{ certificate.date }}</p>
               <p v-if="certificate.link">
-                <a :href="certificate.link" target="_blank" rel="noopener noreferrer">مشاهده گواهینامه</a>
+                <a :href="certificate.link" target="_blank" rel="noopener noreferrer"
+                  >مشاهده گواهینامه</a
+                >
               </p>
             </div>
             <div class="certificate-actions">
@@ -132,8 +158,18 @@ const isFormValid = computed(() => {
       <!-- فرم -->
       <form class="form" @submit.prevent="handleSubmit">
         <div class="grid">
-          <TextField v-model="formFields.title" label="عنوان گواهینامه" rules="required" name="title" />
-          <TextField v-model="formFields.institute" label="موسسه صادرکننده" rules="required" name="institute" />
+          <TextField
+            v-model="formFields.title"
+            label="عنوان گواهینامه"
+            rules="required"
+            name="title"
+          />
+          <TextField
+            v-model="formFields.institute"
+            label="موسسه صادرکننده"
+            rules="required"
+            name="institute"
+          />
           <TextField v-model="formFields.link" label="لینک گواهینامه" name="link" />
         </div>
 

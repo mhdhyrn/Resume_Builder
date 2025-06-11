@@ -7,9 +7,15 @@ import { useRouter } from 'vue-router';
 import { educationStore } from '@/stores/education.store';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
+import { useProgressStore } from '@/stores/progress.store';
+import { useProgress } from '@/composables/useProgress';
+import { useProgressbarStore } from '@/stores/progressbar.store';
 
 const router = useRouter();
 const store = educationStore();
+const progressStore = useProgressStore();
+const { updateProgress } = useProgress();
+const progressbarStore = useProgressbarStore();
 const isLoading = ref(true);
 
 const emptyForm = {
@@ -123,7 +129,10 @@ const handleSubmit = async () => {
         type: 'success',
       });
     } else {
-      await store.createEducation(formData);
+      const response = await store.createEducation(formData);
+      if (store.educations.length === 1) {
+        await progressbarStore.updateProgressbar();
+      }
       notify({
         message: 'سابقه تحصیلی با موفقیت اضافه شد',
         type: 'success',
@@ -141,6 +150,9 @@ const handleSubmit = async () => {
 const handleDelete = async (id) => {
   try {
     await store.deleteEducation(id);
+    if (store.educations.length === 0) {
+      await progressbarStore.updateProgressbar();
+    }
     notify({
       message: 'سابقه تحصیلی با موفقیت حذف شد',
       type: 'success',

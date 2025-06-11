@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import TextField from '../TextField.component.vue';
 import Button from '../Button.component.vue';
 import { useRouter } from 'vue-router';
@@ -7,11 +7,16 @@ import { languagesStore } from '@/stores/languages.store';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
 import DropdownComponent from '../Dropdown.component.vue';
+import { useProgressStore } from '@/stores/progress.store';
+import { useProgressbarStore } from '@/stores/progressbar.store';
 
 const router = useRouter();
 const store = languagesStore();
+const progressStore = useProgressStore();
+const progressbarStore = useProgressbarStore();
+const isLoading = ref(true);
 
-const isLoading = computed(() => store.languagesLoading);
+const languagesLength = computed(() => store.languages.length);
 
 const emptyForm = {
   name: '',
@@ -43,6 +48,8 @@ onMounted(async () => {
       message: 'خطا در دریافت اطلاعات',
       type: 'error',
     });
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -68,7 +75,10 @@ const handleSubmit = async () => {
         type: 'success',
       });
     } else {
-      await store.addLanguage(formFields.value);
+      const response = await store.addLanguage(formFields.value);
+      if (store.languages.length === 1) {
+        await progressbarStore.updateProgressbar();
+      }
       notify({
         message: 'زبان با موفقیت اضافه شد',
         type: 'success',
@@ -86,6 +96,9 @@ const handleSubmit = async () => {
 const handleDelete = async (id) => {
   try {
     await store.deleteLanguage(id);
+    if (store.languages.length === 0) {
+      await progressbarStore.updateProgressbar();
+    }
     notify({
       message: 'زبان با موفقیت حذف شد',
       type: 'success',

@@ -7,9 +7,13 @@ import { skillStore } from '@/stores/skill.store';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
 import DropdownComponent from '../Dropdown.component.vue';
+import { useProgressStore } from '@/stores/progress.store';
+import { useProgressbarStore } from '@/stores/progressbar.store';
 
 const router = useRouter();
 const store = skillStore();
+const progressStore = useProgressStore();
+const progressbarStore = useProgressbarStore();
 const isLoading = ref(true);
 
 const emptyForm = {
@@ -69,7 +73,10 @@ const handleSubmit = async () => {
         type: 'success',
       });
     } else {
-      await store.createSkill(formFields.value);
+      const response = await store.createSkill(formFields.value);
+      if (store.skills.length === 1) {
+        await progressbarStore.updateProgressbar();
+      }
       notify({
         message: 'مهارت با موفقیت اضافه شد',
         type: 'success',
@@ -87,6 +94,9 @@ const handleSubmit = async () => {
 const handleDelete = async (id) => {
   try {
     await store.deleteSkill(id);
+    if (store.skills.length === 0) {
+      await progressbarStore.updateProgressbar();
+    }
     notify({
       message: 'مهارت با موفقیت حذف شد',
       type: 'success',

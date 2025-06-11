@@ -62,6 +62,14 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/resume/profile/:userId',
+    name: 'Profile',
+    component: () => import('@/views/Profile.view.vue'),
+    meta: {
+      isAuthRequired: true,
+    },
+  },
 ];
 
 const router = createRouter({

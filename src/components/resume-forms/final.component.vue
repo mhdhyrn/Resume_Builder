@@ -30,18 +30,17 @@
         <p>با اشتراک‌گذاری پروفایل، دیگران می‌توانند رزومه شما را مشاهده کنند.</p>
       </div>
       <template #footer>
-        <Button
-          text="اشتراک‌گذاری پروفایل"
-          @click="
-            () => {
-              // اینجا می‌تونیم به صفحه اشتراک‌گذاری هدایت کنیم
-              handleCloseShareModal();
-            }
-          "
-        />
+        <Button text="اشتراک‌گذاری پروفایل" @click="handleShareProfile" />
         <Button text="بستن" variant="outline" @click="handleCloseShareModal" />
       </template>
     </Modal>
+
+    <QRCodeModal
+      :is-open="isQRCodeModalOpen"
+      :qr-code-url="qrCodeUrl"
+      :profile-url="profileUrl"
+      @close="handleCloseQRCodeModal"
+    />
   </div>
 </template>
 
@@ -52,10 +51,16 @@ import LoadingComponent from '../Loading.component.vue';
 import Modal from '../Modal.component.vue';
 import templates from '@/constants/templates.constant';
 import { downloadResume } from '@/services/api/resume.service';
+import { getPersonalInfo } from '@/services/api/personal-info.service';
+import { generateQRCode } from '@/services/api/qrcode.service';
+import QRCodeModal from '../QRCodeModal.component.vue';
 
 const selectedTemplate = ref(null);
 const isButtonLoading = ref(false);
 const isShareModalOpen = ref(false);
+const isQRCodeModalOpen = ref(false);
+const qrCodeUrl = ref('');
+const profileUrl = ref('');
 
 const submitButtonConfig = reactive({
   text: 'دانلود رزومه',
@@ -99,8 +104,35 @@ const selectTemplate = (template) => {
   selectedTemplate.value = template;
 };
 
+const handleShareProfile = async () => {
+  try {
+    // دریافت user_id
+    const personalInfoResponse = await getPersonalInfo();
+    const userId = personalInfoResponse.data.user_id;
+
+    // ساخت URL پروفایل
+    const url = `${window.location.origin}/resume/profile/${userId}`;
+    profileUrl.value = url;
+
+    // دریافت QR code
+    const qrResponse = await generateQRCode(url);
+    qrCodeUrl.value = URL.createObjectURL(qrResponse.data);
+
+    // بستن مودال قبلی و نمایش مودال QR code
+    isShareModalOpen.value = false;
+    isQRCodeModalOpen.value = true;
+  } catch (error) {
+    console.error('خطا در دریافت QR code:', error);
+  }
+};
+
 const handleCloseShareModal = () => {
   isShareModalOpen.value = false;
+};
+
+const handleCloseQRCodeModal = () => {
+  isQRCodeModalOpen.value = false;
+  URL.revokeObjectURL(qrCodeUrl.value);
 };
 </script>
 

@@ -11,9 +11,15 @@ import { personalInfoStore } from '@/stores';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
 import { getAIAboutMeSuggestion } from '@/services/api/personal-info.service';
+import { useProgressStore } from '@/stores/progress.store';
+import { useProgress } from '@/composables/useProgress';
+import { useProgressbarStore } from '@/stores/progressbar.store';
 
 const router = useRouter();
 const store = personalInfoStore();
+const progressStore = useProgressStore();
+const { updateProgress } = useProgress();
+const progressbarStore = useProgressbarStore();
 
 const avatarPicture = ref(null);
 
@@ -271,6 +277,19 @@ const handleSubmit = async () => {
     }
 
     await store.updateProfileInfo(profileData);
+
+    const response = await store.updatePersonalInfo({
+      gender: formFields.value.select.gender.value,
+      isMarried: formFields.value.select.maritalStatus.value,
+      militaryServiceStatus: formFields.value.select.militaryServiceStatus.value,
+      aboutMe: formFields.value.textArea.aboutMe.value,
+    });
+
+    progressStore.checkSectionCompletion('personalInfo', response.data);
+
+    await updateProgress();
+
+    await progressbarStore.updateProgressbar();
 
     notify({
       message: 'اطلاعات با موفقیت ذخیره شد',

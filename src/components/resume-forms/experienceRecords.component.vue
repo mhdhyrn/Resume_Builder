@@ -8,9 +8,15 @@ import { workExperienceStore } from '@/stores/work-experience.store';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
 import DatePickerInput from '../DatePickerInput.component.vue';
+import { useProgressStore } from '@/stores/progress.store';
+import { useProgress } from '@/composables/useProgress';
+import { useProgressbarStore } from '@/stores/progressbar.store';
 
 const router = useRouter();
 const store = workExperienceStore();
+const progressStore = useProgressStore();
+const { updateProgress } = useProgress();
+const progressbarStore = useProgressbarStore();
 const isLoading = ref(true);
 
 const emptyForm = {
@@ -64,20 +70,14 @@ const editWorkExperience = (experience) => {
 
 const handleSubmit = async () => {
   try {
-    if (editingId.value) {
-      await store.updateWorkExperience(editingId.value, formFields.value);
-      notify({
-        message: 'سابقه شغلی با موفقیت ویرایش شد',
-        type: 'success',
-      });
-    } else {
-      await store.createWorkExperience(formFields.value);
-      notify({
-        message: 'سابقه شغلی با موفقیت اضافه شد',
-        type: 'success',
-      });
+    const response = await store.createWorkExperience(formFields.value);
+    if (store.workExperiences.length === 1) {
+      await progressbarStore.updateProgressbar();
     }
-    resetForm();
+    notify({
+      message: 'سابقه کاری با موفقیت اضافه شد',
+      type: 'success',
+    });
   } catch (error) {
     notify({
       message: error.message || 'خطا در ذخیره اطلاعات',
@@ -89,13 +89,13 @@ const handleSubmit = async () => {
 const handleDelete = async (id) => {
   try {
     await store.deleteWorkExperience(id);
+    if (store.workExperiences.length === 0) {
+      await progressbarStore.updateProgressbar();
+    }
     notify({
-      message: 'سابقه شغلی با موفقیت حذف شد',
+      message: 'سابقه کاری با موفقیت حذف شد',
       type: 'success',
     });
-    if (editingId.value === id) {
-      resetForm();
-    }
   } catch (error) {
     notify({
       message: error.message || 'خطا در حذف اطلاعات',
@@ -118,6 +118,25 @@ const isFormValid = computed(() => {
     formFields.value.city
   );
 });
+
+const saveExperience = async () => {
+  try {
+    const response = await store.updateWorkExperience(editingId.value, formFields.value);
+    await updateProgress();
+    progressStore.checkSectionCompletion('workExperience', response.data);
+    notify({
+      message: 'سابقه شغلی با موفقیت ویرایش شد',
+      type: 'success',
+    });
+    resetForm();
+  } catch (error) {
+    console.error('خطا در ذخیره سوابق کاری:', error);
+    notify({
+      message: error.message || 'خطا در ذخیره سوابق کاری',
+      type: 'error',
+    });
+  }
+};
 </script>
 
 <template>
