@@ -20,6 +20,10 @@ const steps = [
     title: 'زبان ها',
   },
   {
+    name: 'certificates',
+    title: 'گواهینامه‌ها',
+  },
+  {
     name: 'final',
     title: 'دانلود رزومه',
   },

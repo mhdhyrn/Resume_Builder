@@ -3,46 +3,35 @@ import { ref, computed, onMounted } from 'vue';
 import TextField from '../TextField.component.vue';
 import Button from '../Button.component.vue';
 import { useRouter } from 'vue-router';
-import { languagesStore } from '@/stores/languages.store';
+import { certificateStore } from '@/stores/certificate.store';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
-import DropdownComponent from '../Dropdown.component.vue';
 
 const router = useRouter();
-const store = languagesStore();
-
-const isLoading = computed(() => store.languagesLoading);
+const store = certificateStore();
+const isLoading = ref(true);
 
 const emptyForm = {
-  name: '',
-  proficiency: '',
+  title: '',
+  institute: '',
+  date: null,
+  link: '',
 };
 
 const formFields = ref({ ...emptyForm });
 const editingId = ref(null);
 
-const proficiencyLevels = [
-  { label: 'مبتدی', value: 'beginner' },
-  { label: 'متوسط', value: 'intermediate' },
-  { label: 'پیشرفته', value: 'advanced' },
-  { label: 'زبان مادری', value: 'native' },
-];
-
-// Helper function to get proficiency label
-const getProficiencyLabel = (value) => {
-  const level = proficiencyLevels.find((l) => l.value === value);
-  return level ? level.label : value;
-};
-
-// Load languages
+// Load certificates
 onMounted(async () => {
   try {
-    await store.fetchLanguages();
+    await store.fetchCertificates();
   } catch (error) {
     notify({
       message: 'خطا در دریافت اطلاعات',
       type: 'error',
     });
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -51,26 +40,28 @@ const resetForm = () => {
   editingId.value = null;
 };
 
-const editLanguage = (language) => {
+const editCertificate = (certificate) => {
   formFields.value = {
-    name: language.name || '',
-    proficiency: language.proficiency || '',
+    title: certificate.title || '',
+    institute: certificate.institute || '',
+    date: certificate.date || null,
+    link: certificate.link || '',
   };
-  editingId.value = language.id;
+  editingId.value = certificate.id;
 };
 
 const handleSubmit = async () => {
   try {
     if (editingId.value) {
-      await store.updateLanguage(editingId.value, formFields.value);
+      await store.updateCertificate(editingId.value, formFields.value);
       notify({
-        message: 'زبان با موفقیت ویرایش شد',
+        message: 'گواهینامه با موفقیت ویرایش شد',
         type: 'success',
       });
     } else {
-      await store.addLanguage(formFields.value);
+      await store.createCertificate(formFields.value);
       notify({
-        message: 'زبان با موفقیت اضافه شد',
+        message: 'گواهینامه با موفقیت اضافه شد',
         type: 'success',
       });
     }
@@ -85,9 +76,9 @@ const handleSubmit = async () => {
 
 const handleDelete = async (id) => {
   try {
-    await store.deleteLanguage(id);
+    await store.deleteCertificate(id);
     notify({
-      message: 'زبان با موفقیت حذف شد',
+      message: 'گواهینامه با موفقیت حذف شد',
       type: 'success',
     });
     if (editingId.value === id) {
@@ -102,11 +93,11 @@ const handleDelete = async (id) => {
 };
 
 const handleNext = () => {
-  router.push({ name: 'ResumeForms', query: { step: 'certificates' } });
+  router.push({ name: 'ResumeForms', query: { step: 'final' } });
 };
 
 const isFormValid = computed(() => {
-  return formFields.value.name && formFields.value.proficiency;
+  return formFields.value.title && formFields.value.institute;
 });
 </script>
 
@@ -116,19 +107,23 @@ const isFormValid = computed(() => {
       <LoadingComponent />
     </div>
     <template v-else>
-      <div class="title">زبان‌ها</div>
+      <div class="title">گواهینامه‌ها</div>
 
-      <!-- لیست زبان‌ها -->
-      <div v-if="store.languages.length > 0" class="languages-list">
+      <!-- لیست گواهینامه‌ها -->
+      <div v-if="store.certificates.length > 0" class="certificates-list">
         <TransitionGroup name="list">
-          <div v-for="language in store.languages" :key="language.id" class="language-card">
-            <div class="language-info">
-              <h3>{{ language.name }}</h3>
-              <p>{{ getProficiencyLabel(language.proficiency) }}</p>
+          <div v-for="certificate in store.certificates" :key="certificate.id" class="certificate-card">
+            <div class="certificate-info">
+              <h3>{{ certificate.title }}</h3>
+              <p>{{ certificate.institute }}</p>
+              <p v-if="certificate.date">{{ certificate.date }}</p>
+              <p v-if="certificate.link">
+                <a :href="certificate.link" target="_blank" rel="noopener noreferrer">مشاهده گواهینامه</a>
+              </p>
             </div>
-            <div class="language-actions">
-              <button class="edit-btn" @click="editLanguage(language)">ویرایش</button>
-              <button class="delete-btn" @click="handleDelete(language.id)">حذف</button>
+            <div class="certificate-actions">
+              <button class="edit-btn" @click="editCertificate(certificate)">ویرایش</button>
+              <button class="delete-btn" @click="handleDelete(certificate.id)">حذف</button>
             </div>
           </div>
         </TransitionGroup>
@@ -137,19 +132,14 @@ const isFormValid = computed(() => {
       <!-- فرم -->
       <form class="form" @submit.prevent="handleSubmit">
         <div class="grid">
-          <TextField v-model="formFields.name" label="نام زبان" rules="required" name="name" />
-          <DropdownComponent
-            v-model="formFields.proficiency"
-            :options="proficiencyLevels"
-            label="سطح زبان"
-            rules="required"
-            name="proficiency"
-          />
+          <TextField v-model="formFields.title" label="عنوان گواهینامه" rules="required" name="title" />
+          <TextField v-model="formFields.institute" label="موسسه صادرکننده" rules="required" name="institute" />
+          <TextField v-model="formFields.link" label="لینک گواهینامه" name="link" />
         </div>
 
         <div class="form-actions">
           <Button
-            :text="editingId ? 'ویرایش زبان' : 'افزودن زبان'"
+            :text="editingId ? 'ویرایش گواهینامه' : 'افزودن گواهینامه'"
             :is-loading="store.createLoading || store.updateLoading"
             :is-disabled="!isFormValid"
             type="submit"
@@ -182,7 +172,7 @@ const isFormValid = computed(() => {
   @include typography(lg, bold);
 }
 
-.languages-list {
+.certificates-list {
   width: 70%;
   display: flex;
   flex-direction: column;
@@ -201,7 +191,7 @@ const isFormValid = computed(() => {
   transform: translateX(30px);
 }
 
-.language-card {
+.certificate-card {
   background-color: color(surface);
   padding: space(4);
   border-radius: radius(lg);
@@ -210,7 +200,7 @@ const isFormValid = computed(() => {
   justify-content: space-between;
   align-items: center;
 
-  .language-info {
+  .certificate-info {
     h3 {
       @include typography(md, bold);
       margin-bottom: space(2);
@@ -219,10 +209,20 @@ const isFormValid = computed(() => {
     p {
       @include typography(sm);
       color: color(on-surface-variant);
+      margin-bottom: space(1);
+
+      a {
+        color: color(primary);
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
   }
 
-  .language-actions {
+  .certificate-actions {
     display: flex;
     gap: space(2);
   }
