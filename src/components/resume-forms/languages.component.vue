@@ -3,14 +3,15 @@ import { ref, computed, onMounted } from 'vue';
 import TextField from '../TextField.component.vue';
 import Button from '../Button.component.vue';
 import { useRouter } from 'vue-router';
-import { skillStore } from '@/stores/skill.store';
+import { languagesStore } from '@/stores/languages.store';
 import { notify } from '@/plugins/toast';
 import LoadingComponent from '../Loading.component.vue';
 import DropdownComponent from '../Dropdown.component.vue';
 
 const router = useRouter();
-const store = skillStore();
-const isLoading = ref(true);
+const store = languagesStore();
+
+const isLoading = computed(() => store.languagesLoading);
 
 const emptyForm = {
   name: '',
@@ -24,7 +25,7 @@ const proficiencyLevels = [
   { label: 'مبتدی', value: 'beginner' },
   { label: 'متوسط', value: 'intermediate' },
   { label: 'پیشرفته', value: 'advanced' },
-  { label: 'حرفه‌ای', value: 'expert' },
+  { label: 'زبان مادری', value: 'native' },
 ];
 
 // Helper function to get proficiency label
@@ -33,17 +34,15 @@ const getProficiencyLabel = (value) => {
   return level ? level.label : value;
 };
 
-// Load skills
+// Load languages
 onMounted(async () => {
   try {
-    await store.fetchSkills();
+    await store.fetchLanguages();
   } catch (error) {
     notify({
       message: 'خطا در دریافت اطلاعات',
       type: 'error',
     });
-  } finally {
-    isLoading.value = false;
   }
 });
 
@@ -52,26 +51,26 @@ const resetForm = () => {
   editingId.value = null;
 };
 
-const editSkill = (skill) => {
+const editLanguage = (language) => {
   formFields.value = {
-    name: skill.name || '',
-    proficiency: skill.proficiency || '',
+    name: language.name || '',
+    proficiency: language.proficiency || '',
   };
-  editingId.value = skill.id;
+  editingId.value = language.id;
 };
 
 const handleSubmit = async () => {
   try {
     if (editingId.value) {
-      await store.updateSkill(editingId.value, formFields.value);
+      await store.updateLanguage(editingId.value, formFields.value);
       notify({
-        message: 'مهارت با موفقیت ویرایش شد',
+        message: 'زبان با موفقیت ویرایش شد',
         type: 'success',
       });
     } else {
-      await store.createSkill(formFields.value);
+      await store.addLanguage(formFields.value);
       notify({
-        message: 'مهارت با موفقیت اضافه شد',
+        message: 'زبان با موفقیت اضافه شد',
         type: 'success',
       });
     }
@@ -86,9 +85,9 @@ const handleSubmit = async () => {
 
 const handleDelete = async (id) => {
   try {
-    await store.deleteSkill(id);
+    await store.deleteLanguage(id);
     notify({
-      message: 'مهارت با موفقیت حذف شد',
+      message: 'زبان با موفقیت حذف شد',
       type: 'success',
     });
     if (editingId.value === id) {
@@ -103,7 +102,7 @@ const handleDelete = async (id) => {
 };
 
 const handleNext = () => {
-  router.push({ name: 'ResumeForms', query: { step: 'languages' } });
+  router.push({ name: 'ResumeForms', query: { step: 'final' } });
 };
 
 const isFormValid = computed(() => {
@@ -117,37 +116,40 @@ const isFormValid = computed(() => {
       <LoadingComponent />
     </div>
     <template v-else>
-      <div class="title">مهارت‌ها</div>
+      <div class="title">زبان‌ها</div>
 
-      <!-- لیست مهارت‌ها -->
-      <div v-if="store.skills.length > 0" class="skills-list">
-        <div v-for="skill in store.skills" :key="skill.id" class="skill-card">
-          <div class="skill-info">
-            <h3>{{ skill.name }}</h3>
-            <p>{{ getProficiencyLabel(skill.proficiency) }}</p>
+      <!-- لیست زبان‌ها -->
+      <div v-if="store.languages.length > 0" class="languages-list">
+        <TransitionGroup name="list">
+          <div v-for="language in store.languages" :key="language.id" class="language-card">
+            <div class="language-info">
+              <h3>{{ language.name }}</h3>
+              <p>{{ getProficiencyLabel(language.proficiency) }}</p>
+            </div>
+            <div class="language-actions">
+              <button class="edit-btn" @click="editLanguage(language)">ویرایش</button>
+              <button class="delete-btn" @click="handleDelete(language.id)">حذف</button>
+            </div>
           </div>
-          <div class="skill-actions">
-            <button class="edit-btn" @click="editSkill(skill)">ویرایش</button>
-            <button class="delete-btn" @click="handleDelete(skill.id)">حذف</button>
-          </div>
-        </div>
+        </TransitionGroup>
       </div>
 
       <!-- فرم -->
       <form class="form" @submit.prevent="handleSubmit">
         <div class="grid">
-          <TextField v-model="formFields.name" label="نام مهارت" rules="required" />
+          <TextField v-model="formFields.name" label="نام زبان" rules="required" name="name" />
           <DropdownComponent
             v-model="formFields.proficiency"
             :options="proficiencyLevels"
-            label="سطح مهارت"
+            label="سطح زبان"
             rules="required"
+            name="proficiency"
           />
         </div>
 
         <div class="form-actions">
           <Button
-            :text="editingId ? 'ویرایش مهارت' : 'افزودن مهارت'"
+            :text="editingId ? 'ویرایش زبان' : 'افزودن زبان'"
             :is-loading="store.createLoading || store.updateLoading"
             :is-disabled="!isFormValid"
             type="submit"
@@ -180,7 +182,7 @@ const isFormValid = computed(() => {
   @include typography(lg, bold);
 }
 
-.skills-list {
+.languages-list {
   width: 70%;
   display: flex;
   flex-direction: column;
@@ -188,7 +190,18 @@ const isFormValid = computed(() => {
   margin-bottom: space(5);
 }
 
-.skill-card {
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.language-card {
   background-color: color(surface);
   padding: space(4);
   border-radius: radius(lg);
@@ -197,7 +210,7 @@ const isFormValid = computed(() => {
   justify-content: space-between;
   align-items: center;
 
-  .skill-info {
+  .language-info {
     h3 {
       @include typography(md, bold);
       margin-bottom: space(2);
@@ -209,7 +222,7 @@ const isFormValid = computed(() => {
     }
   }
 
-  .skill-actions {
+  .language-actions {
     display: flex;
     gap: space(2);
   }

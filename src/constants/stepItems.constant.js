@@ -16,6 +16,10 @@ const steps = [
     title: 'مهارت ها',
   },
   {
+    name: 'languages',
+    title: 'زبان ها',
+  },
+  {
     name: 'final',
     title: 'دانلود رزومه',
   },
