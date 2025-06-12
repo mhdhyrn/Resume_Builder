@@ -11,6 +11,7 @@ import DatePickerInput from '../DatePickerInput.component.vue';
 import { useProgressStore } from '@/stores/progress.store';
 import { useProgress } from '@/composables/useProgress';
 import { useProgressbarStore } from '@/stores/progressbar.store';
+import moment from 'moment-jalaali';
 
 const router = useRouter();
 const store = workExperienceStore();
@@ -119,6 +120,19 @@ const isFormValid = computed(() => {
   );
 });
 
+// محدودیت‌های تاریخ
+const today = computed(() => {
+  return moment().locale('fa').format('jYYYY/jMM/jDD');
+});
+
+const startDateMax = computed(() => {
+  return formFields.value.endDate || today.value;
+});
+
+const endDateMin = computed(() => {
+  return formFields.value.startDate || '';
+});
+
 const saveExperience = async () => {
   try {
     const response = await store.updateWorkExperience(editingId.value, formFields.value);
@@ -176,12 +190,18 @@ const saveExperience = async () => {
         <div class="grid">
           <TextField v-model="formFields.position" label="عنوان شغلی" rules="required" />
           <TextField v-model="formFields.companyName" label="نام شرکت" rules="required" />
-          <DatePickerInput v-model="formFields.startDate" label="تاریخ شروع" rules="required" />
+          <DatePickerInput
+            v-model="formFields.startDate"
+            label="تاریخ شروع"
+            rules="required"
+            :max="startDateMax"
+          />
           <DatePickerInput
             v-model="formFields.endDate"
             label="تاریخ پایان"
             :rules="formFields.isCurrent ? '' : 'required'"
             :is-disabled="formFields.isCurrent"
+            :min="endDateMin"
           />
           <div class="checkbox-wrapper">
             <label>
