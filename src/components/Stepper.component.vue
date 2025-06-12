@@ -131,30 +131,32 @@ const goToStep = (index, stepName) => {
       .stepper__toggle {
         width: 100%;
         padding: 1rem;
-        background: #f3f4f6;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
+        background: color(surface);
+        border: 1px solid color(outline);
+        border-radius: radius(lg);
         text-align: right;
         font-weight: bold;
+        color: color(on-surface);
       }
 
       .stepper__list {
         margin-top: 0.5rem;
         list-style: none;
         padding: 0;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
+        border: 1px solid color(outline);
+        border-radius: radius(lg);
         overflow: hidden;
 
         li {
           padding: 1rem;
-          background: #fff;
-          border-top: 1px solid #e5e7eb;
+          background: color(surface);
+          border-top: 1px solid color(outline);
           cursor: pointer;
+          color: color(on-surface);
 
           &.active {
-            background-color: #e0f2fe;
-            color: #0284c7;
+            background-color: color(primary-container);
+            color: color(on-primary-container);
             font-weight: bold;
           }
 

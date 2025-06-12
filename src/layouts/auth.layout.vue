@@ -1,6 +1,12 @@
 <script setup>
 import BaseLogo from '@/components/BaseLogo.component.vue';
+import { useRoute } from 'vue-router';
+import { computed } from 'vue';
+
+const route = useRoute();
+const isProfileCompletion = computed(() => route.name === 'ProfileCompletion');
 </script>
+
 <template>
   <main class="auth-layout">
     <div class="auth-layout__main main">
@@ -8,11 +14,11 @@ import BaseLogo from '@/components/BaseLogo.component.vue';
         <img src="@/assets/images/login-image.png" class="main__image" alt="login image" />
       </div>
       <div class="main__form">
-        <BaseLogo class="main__logo" />
+        <BaseLogo v-if="!isProfileCompletion" class="main__logo" />
         <Transition name="fade" mode="out-in">
           <slot :key="$route.path" />
         </Transition>
-        <div class="main__footer">
+        <div v-if="!isProfileCompletion" class="main__footer">
           با عضویت در سایت روم زومه، تمامی
           <span class="main__rules">قوانین و مقرارت</span>
           را پذیرفته‌اید.
@@ -21,6 +27,7 @@ import BaseLogo from '@/components/BaseLogo.component.vue';
     </div>
   </main>
 </template>
+
 <style lang="scss" scoped>
 .auth-layout {
   overflow-x: hidden;

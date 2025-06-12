@@ -105,7 +105,7 @@ const handleDelete = async (id) => {
 };
 
 const handleNext = () => {
-  router.push({ name: 'ResumeForms', query: { step: 'skillRecords' } });
+  router.push({ name: 'ResumeForms', query: { step: 'skills' } });
 };
 
 const isFormValid = computed(() => {

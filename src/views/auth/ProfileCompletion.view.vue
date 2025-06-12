@@ -82,7 +82,6 @@ onBeforeMount(() => {
 <template>
   <div class="profile-completion">
     <form class="profile-completion__form" @submit.prevent="formSubmission">
-      <h3 class="profile-completion__title">تکمیل پروفایل</h3>
       <div class="profile-completion__field-container">
         <TextField
           v-for="key in ['firstName', 'lastName']"
@@ -98,7 +97,7 @@ onBeforeMount(() => {
           class="profile-completion__field"
         />
         <ImagePickerComponent
-          @select="(file) => (formData.profilePicture = file)"
+          @select="(data) => (formData.profilePicture = data.file)"
           @remove="() => (formData.profilePicture = null)"
         />
       </div>

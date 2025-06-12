@@ -73,6 +73,7 @@ const handleClose = () => {
 .modal-title {
   margin: 0;
   @include typography(lg, bold);
+  color: color(on-surface);
 }
 
 .close-button {
