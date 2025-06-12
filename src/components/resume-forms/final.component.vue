@@ -153,6 +153,10 @@ const handleCloseQRCodeModal = () => {
   border-radius: radius(lg);
   box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
   width: 70%;
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 1rem;
+  }
 }
 
 .description {
@@ -213,6 +217,14 @@ const handleCloseQRCodeModal = () => {
 
 .submit-btn {
   width: remify(300);
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .share-content {

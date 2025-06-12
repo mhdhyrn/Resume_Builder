@@ -113,6 +113,7 @@ const handleDelete = async (id) => {
 };
 
 const handleNext = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   router.push({ name: 'ResumeForms', query: { step: 'languages' } });
 };
 

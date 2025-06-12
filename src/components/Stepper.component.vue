@@ -32,6 +32,7 @@ watch(
 // هنگام کلیک روی استپ
 const goToStep = (index, stepName) => {
   router.push({ name: 'ResumeForms', query: { step: stepName } });
+  isMobileListOpen.value = false;
 };
 </script>
 
