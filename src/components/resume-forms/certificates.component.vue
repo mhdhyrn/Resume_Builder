@@ -206,6 +206,10 @@ const saveCertificate = async () => {
 .title {
   width: 70%;
   @include typography(lg, bold);
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
 }
 
 .certificates-list {
@@ -214,6 +218,10 @@ const saveCertificate = async () => {
   flex-direction: column;
   gap: space(3);
   margin-bottom: space(5);
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
 }
 
 .list-enter-active,
@@ -270,6 +278,11 @@ const saveCertificate = async () => {
   border-radius: radius(lg);
   box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
   width: 70%;
+
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 1rem;
+  }
 }
 
 .grid {
@@ -284,6 +297,15 @@ const saveCertificate = async () => {
   display: flex;
   gap: space(2);
   justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .next-step {
@@ -294,6 +316,10 @@ const saveCertificate = async () => {
 
   button {
     width: 30%;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
   }
 }
 
@@ -304,6 +330,7 @@ const saveCertificate = async () => {
   border: none;
   border-radius: radius(md);
   cursor: pointer;
+  min-width: 80px;
 }
 
 .delete-btn {
@@ -313,5 +340,6 @@ const saveCertificate = async () => {
   border: none;
   border-radius: radius(md);
   cursor: pointer;
+  min-width: 80px;
 }
 </style>

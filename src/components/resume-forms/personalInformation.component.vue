@@ -435,6 +435,10 @@ hr {
 .title {
   width: 70%;
   @include typography(lg, bold);
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
 }
 
 .form {
@@ -445,6 +449,11 @@ hr {
 
   @include breakpoint(md) {
     width: 70%;
+  }
+
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 1rem;
   }
 }
 
@@ -495,10 +504,23 @@ hr {
   margin-top: 2rem;
   text-align: right;
   @include flex($justify: end, $align: center);
+
+  @media (max-width: 768px) {
+    margin-top: 1.5rem;
+    width: 100%;
+
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .submit-btn {
   width: remify(300);
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .ai-section {

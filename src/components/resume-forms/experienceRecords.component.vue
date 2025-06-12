@@ -231,6 +231,10 @@ const saveExperience = async () => {
 .title {
   width: 70%;
   @include typography(lg, bold);
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
 }
 
 .experience-list {
@@ -239,6 +243,10 @@ const saveExperience = async () => {
   flex-direction: column;
   gap: space(3);
   margin-bottom: space(5);
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
 }
 
 .experience-card {
@@ -280,6 +288,11 @@ const saveExperience = async () => {
   border-radius: radius(lg);
   box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
   width: 70%;
+
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 1rem;
+  }
 }
 
 .grid {
@@ -312,6 +325,15 @@ const saveExperience = async () => {
   display: flex;
   gap: space(2);
   justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .next-step {
@@ -322,6 +344,10 @@ const saveExperience = async () => {
 
   button {
     width: 30%;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
   }
 }
 
@@ -332,6 +358,7 @@ const saveExperience = async () => {
   border: none;
   border-radius: radius(md);
   cursor: pointer;
+  min-width: 80px;
 }
 
 .delete-btn {
@@ -341,5 +368,6 @@ const saveExperience = async () => {
   border: none;
   border-radius: radius(md);
   cursor: pointer;
+  min-width: 80px;
 }
 </style>

@@ -193,6 +193,10 @@ const isFormValid = computed(() => {
 .title {
   width: 70%;
   @include typography(lg, bold);
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
 }
 
 .languages-list {
@@ -201,6 +205,10 @@ const isFormValid = computed(() => {
   flex-direction: column;
   gap: space(3);
   margin-bottom: space(5);
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
 }
 
 .list-enter-active,
@@ -247,6 +255,11 @@ const isFormValid = computed(() => {
   border-radius: radius(lg);
   box-shadow: 0 0 8px rgba(148, 148, 148, 0.05);
   width: 70%;
+
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 1rem;
+  }
 }
 
 .grid {
@@ -261,6 +274,15 @@ const isFormValid = computed(() => {
   display: flex;
   gap: space(2);
   justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .next-step {
@@ -271,6 +293,10 @@ const isFormValid = computed(() => {
 
   button {
     width: 30%;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
   }
 }
 
@@ -281,6 +307,7 @@ const isFormValid = computed(() => {
   border: none;
   border-radius: radius(md);
   cursor: pointer;
+  min-width: 80px;
 }
 
 .delete-btn {
@@ -290,5 +317,6 @@ const isFormValid = computed(() => {
   border: none;
   border-radius: radius(md);
   cursor: pointer;
+  min-width: 80px;
 }
 </style>
