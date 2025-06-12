@@ -122,14 +122,16 @@ const handleSubmit = async () => {
         : null,
     };
 
+    let response;
     if (editingId.value) {
-      await store.updateEducation(editingId.value, formData);
+      response = await store.updateEducation(editingId.value, formData);
+      await progressStore.checkSectionCompletion('education', response);
       notify({
         message: 'سابقه تحصیلی با موفقیت ویرایش شد',
         type: 'success',
       });
     } else {
-      const response = await store.createEducation(formData);
+      response = await store.createEducation(formData);
       if (store.educations.length === 1) {
         await progressbarStore.updateProgressbar();
       }

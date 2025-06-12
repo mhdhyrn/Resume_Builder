@@ -71,14 +71,24 @@ const editWorkExperience = (experience) => {
 
 const handleSubmit = async () => {
   try {
-    const response = await store.createWorkExperience(formFields.value);
-    if (store.workExperiences.length === 1) {
-      await progressbarStore.updateProgressbar();
+    let response;
+    if (editingId.value) {
+      response = await store.updateWorkExperience(editingId.value, formFields.value);
+      notify({
+        message: 'سابقه کاری با موفقیت ویرایش شد',
+        type: 'success',
+      });
+    } else {
+      response = await store.createWorkExperience(formFields.value);
+      if (store.workExperiences.length === 1) {
+        await progressbarStore.updateProgressbar();
+      }
+      notify({
+        message: 'سابقه کاری با موفقیت اضافه شد',
+        type: 'success',
+      });
     }
-    notify({
-      message: 'سابقه کاری با موفقیت اضافه شد',
-      type: 'success',
-    });
+    resetForm();
   } catch (error) {
     notify({
       message: error.message || 'خطا در ذخیره اطلاعات',
