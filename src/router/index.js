@@ -66,9 +66,9 @@ const routes = [
     path: '/resume/profile/:userId',
     name: 'Profile',
     component: () => import('@/views/Profile.view.vue'),
-    meta: {
-      isAuthRequired: true,
-    },
+    // meta: {
+    //   isAuthRequired: true,
+    // },
   },
 ];
 
@@ -97,9 +97,11 @@ router.beforeEach((to, from, next) => {
     const isProfileIncomplete =
       !info.firstName || !info.lastName || !info.birthDate || !info.profilePicture;
     const isOnProfileCompletion = to.name === authRoutes.PROFILE_COMPLETION_NAME;
+    const isOnPublicProfile = to.name === 'Profile';
     if (
       isProfileIncomplete &&
       !isOnProfileCompletion &&
+      !isOnPublicProfile &&
       to.name !== authRoutes.LOGIN_NAME &&
       to.name !== authRoutes.OTP_NAME
     ) {
