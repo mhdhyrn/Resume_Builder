@@ -8,6 +8,7 @@ import { useRouter } from 'vue-router';
 import ThemeToggleComponent from './ThemeToggle.component.vue';
 import { authStore } from '@/stores';
 import { computed } from 'vue';
+import useOnClickOutside from '@/composables/useOnClickOutside.composable';
 
 const router = useRouter();
 const store = authStore();
@@ -22,6 +23,16 @@ const isLoggedIn = computed(() => {
 
 const userPhoneNumber = computed(() => {
   return store.userInfo.phoneNumber;
+});
+
+const isMenuOpen = ref(false);
+const menuRef = ref(null);
+const toggleMenu = () => (isMenuOpen.value = !isMenuOpen.value);
+const goToWallet = () => router.push({ name: 'Wallet' });
+const goToMyResumes = () => router.push({ name: 'ResumeHistory' });
+
+useOnClickOutside(menuRef, () => {
+  if (isMenuOpen.value) isMenuOpen.value = false;
 });
 
 const loginButtonConfig = {
@@ -48,11 +59,15 @@ const loginButtonConfig = {
     <div class="the-header__action-container">
       <ThemeToggleComponent />
       <template v-if="isLoggedIn && userPhoneNumber">
-        <div class="the-header__user-profile">
+        <div class="the-header__user-profile" @click="toggleMenu" ref="menuRef">
           <span class="the-header__user-phone-number">{{ userPhoneNumber }}</span>
           <div class="the-header__user-image">
             <SvgLoader name="profile-avatar" class="profile-image" />
           </div>
+        </div>
+        <div v-if="isMenuOpen" class="the-header__menu">
+          <button class="the-header__menu-item" @click="goToWallet">کیف پول</button>
+          <button class="the-header__menu-item" @click="goToMyResumes">رزومه‌های من</button>
         </div>
       </template>
       <template v-else>
@@ -165,5 +180,32 @@ const loginButtonConfig = {
   justify-content: center;
   gap: space(2);
   color: color(on-surface);
+}
+
+.the-header__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: color(surface);
+  border: 1px solid color(outline);
+  border-radius: radius(md);
+  box-shadow: shadow('low');
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  z-index: 300;
+}
+
+.the-header__menu-item {
+  text-align: right;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: color(on-surface);
+  cursor: pointer;
+}
+
+.the-header__menu-item:hover {
+  background: color(surface-container);
 }
 </style>

@@ -1,5 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { authRoutes, homeRoutes, resumeRoutes } from '@/constants/router';
+import {
+  authRoutes,
+  homeRoutes,
+  resumeRoutes,
+  adminRoutes,
+  walletRoutes,
+} from '@/constants/router';
 import { modalStore } from '@/stores';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -9,6 +15,13 @@ const routes = [
     path: homeRoutes.HOME_PATH,
     name: homeRoutes.HOME_NAME,
     component: homeRoutes.HOME_COMPONENT,
+  },
+  // wallet
+  {
+    path: walletRoutes.ROOT_PATH,
+    name: walletRoutes.ROOT_NAME,
+    component: walletRoutes.BALANCE_COMPONENT,
+    meta: walletRoutes.BALANCE_META,
   },
   // auth
   {
@@ -60,6 +73,52 @@ const routes = [
         component: resumeRoutes.STEPS_COMPONENT,
         meta: resumeRoutes.STEPS_META,
       },
+      {
+        path: resumeRoutes.HISTORY_PATH,
+        name: resumeRoutes.HISTORY_NAME,
+        component: resumeRoutes.HISTORY_COMPONENT,
+        meta: resumeRoutes.HISTORY_META,
+      },
+    ],
+  },
+  // admin login (no layout)
+  {
+    path: `${adminRoutes.ROOT_PATH}/${adminRoutes.LOGIN_PATH}`,
+    name: adminRoutes.LOGIN_NAME,
+    component: adminRoutes.LOGIN_COMPONENT,
+    meta: adminRoutes.LOGIN_META,
+  },
+  // admin with layout
+  {
+    path: adminRoutes.ROOT_PATH,
+    name: adminRoutes.ROOT_NAME,
+    redirect: { name: adminRoutes.DASHBOARD_NAME },
+    meta: adminRoutes.ROOT_META,
+    children: [
+      {
+        path: adminRoutes.DASHBOARD_PATH,
+        name: adminRoutes.DASHBOARD_NAME,
+        component: adminRoutes.DASHBOARD_COMPONENT,
+        meta: adminRoutes.DASHBOARD_META,
+      },
+      {
+        path: adminRoutes.PAYMENT_REQUESTS_PATH,
+        name: adminRoutes.PAYMENT_REQUESTS_NAME,
+        component: adminRoutes.PAYMENT_REQUESTS_COMPONENT,
+        meta: adminRoutes.PAYMENT_REQUESTS_META,
+      },
+      {
+        path: adminRoutes.TEMPLATES_PATH,
+        name: adminRoutes.TEMPLATES_NAME,
+        component: adminRoutes.TEMPLATES_COMPONENT,
+        meta: adminRoutes.TEMPLATES_META,
+      },
+      {
+        path: adminRoutes.TEMPLATE_EDIT_PATH,
+        name: adminRoutes.TEMPLATE_EDIT_NAME,
+        component: adminRoutes.TEMPLATE_EDIT_COMPONENT,
+        meta: adminRoutes.TEMPLATE_EDIT_META,
+      },
     ],
   },
   {
@@ -82,7 +141,16 @@ let profileModalShown = false;
 router.beforeEach((to, from, next) => {
   const store = modalStore();
   const isAuthRequired = to.meta.isAuthRequired === true;
+  const isAdminRequired = to.meta.isAdminRequired === true;
   const hasToken = !!sessionStorage.getItem('access_token');
+  const isAdmin = sessionStorage.getItem('is_admin') === 'true';
+
+  if (isAdminRequired) {
+    if (!isAdmin) {
+      next({ name: adminRoutes.LOGIN_NAME });
+      return;
+    }
+  }
 
   if (isAuthRequired && !hasToken) {
     store.openAuthModal();

@@ -7,14 +7,23 @@
 
       <div class="templates-grid">
         <div
-          v-for="template in templates"
+          v-for="template in mergedTemplates"
           :key="template.id"
           class="template-card"
-          :class="{ selected: selectedTemplate?.id === template.id }"
-          @click="selectTemplate(template)"
+          :class="{
+            selected: selectedTemplate?.id === template.id,
+            disabled: template.isPaywalled && !hasEnoughBalance(template),
+          }"
+          @click="onSelectTemplate(template)"
         >
-          <img :src="template.image" :alt="template.title" class="template-image" />
-          <div class="template-title">{{ template.title }}</div>
+          <img :src="baseURL + template.preview" :alt="template.name" class="template-image" />
+          <div class="template-title">
+            <span>{{ template.name }}</span>
+            <span v-if="template.isPaywalled" class="template-price">
+              {{ template.price.toLocaleString() }} تومان
+            </span>
+            <span v-else class="template-free">رایگان</span>
+          </div>
         </div>
       </div>
 
@@ -45,22 +54,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Button from '../Button.component.vue';
 import LoadingComponent from '../Loading.component.vue';
 import Modal from '../Modal.component.vue';
-import templates from '@/constants/templates.constant';
 import { downloadResume } from '@/services/api/resume.service';
 import { getPersonalInfo } from '@/services/api/personal-info.service';
 import { generateQRCode } from '@/services/api/qrcode.service';
 import QRCodeModal from '../QRCodeModal.component.vue';
+import { getTemplateOptions } from '@/services/api/template.service';
+import { getWalletBalance } from '@/services/api/wallet.service';
+import { notify } from '@/plugins/toast';
 
 const selectedTemplate = ref(null);
+const userBalance = ref(0);
+const remoteTemplates = ref([]);
+const isLoadingTemplates = ref(false);
 const isButtonLoading = ref(false);
 const isShareModalOpen = ref(false);
 const isQRCodeModalOpen = ref(false);
 const qrCodeUrl = ref('');
 const profileUrl = ref('');
+
+const baseURL = 'http://185.204.169.71:8000/';
 
 const submitButtonConfig = reactive({
   text: 'دانلود رزومه',
@@ -100,9 +116,49 @@ const handleSubmit = async () => {
   }
 };
 
-const selectTemplate = (template) => {
+const hasEnoughBalance = (template) => {
+  if (!template.isPaywalled) return true;
+  return Number(userBalance.value) >= Number(template.price || 0);
+};
+
+const onSelectTemplate = (template) => {
+  if (template.isPaywalled && !hasEnoughBalance(template)) {
+    notify({ message: 'موجودی کیف پول برای این تمپلیت کافی نیست', type: 'error' });
+    return;
+  }
   selectedTemplate.value = template;
 };
+
+const mergedTemplates = computed(() => {
+  return (remoteTemplates.value || [])
+    .filter((t) => t?.is_enabled)
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      preview: t.preview_path,
+      price: Number(t.price || 0),
+      is_free: t.is_free ?? true,
+      isPaywalled: !(t.is_free ?? true) && Number(t.price || 0) > 0,
+    }));
+});
+
+const loadTemplatesAndBalance = async () => {
+  try {
+    isLoadingTemplates.value = true;
+    const [tmplRes, balanceRes] = await Promise.all([
+      getTemplateOptions(),
+      getWalletBalance().catch(() => ({ data: 0 })),
+    ]);
+    remoteTemplates.value = Array.isArray(tmplRes?.data) ? tmplRes.data : [];
+    userBalance.value = Number(balanceRes?.data ?? 0);
+  } catch (e) {
+    notify({ message: 'خطا در دریافت تمپلیت‌ها', type: 'error' });
+  } finally {
+    isLoadingTemplates.value = false;
+  }
+};
+
+onMounted(loadTemplatesAndBalance);
 
 const handleShareProfile = async () => {
   try {
@@ -194,6 +250,12 @@ const handleCloseQRCodeModal = () => {
     border-color: color(primary);
     box-shadow: 0 0 0 2px color(primary-soft);
   }
+
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(0.25);
+  }
 }
 
 .template-image {
@@ -207,6 +269,20 @@ const handleCloseQRCodeModal = () => {
   padding: space(3);
   text-align: center;
   @include typography(md, bold);
+}
+
+.template-price {
+  display: inline-block;
+  margin-inline-start: 8px;
+  color: color(error);
+  @include typography(sm, medium);
+}
+
+.template-free {
+  display: inline-block;
+  margin-inline-start: 8px;
+  color: color(success);
+  @include typography(sm, medium);
 }
 
 .submit-row {

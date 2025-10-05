@@ -3,7 +3,7 @@ function validateResponse(response) {}
 const getItemFromSession = (key) => sessionStorage.getItem(key);
 
 const isAuthenticated = () => {
-  return !!sessionStorage.getItem('access_token');
+  return !!sessionStorage.getItem('access_token') || !!sessionStorage.getItem('admin_access_token');
 };
 
 const setHeaders = (config) => {
@@ -14,8 +14,13 @@ const setHeaders = (config) => {
     'Cache-Control': 'no-cache',
   };
 
+  const isAdmin = sessionStorage.getItem('is_admin') === 'true';
+  const userToken = sessionStorage.getItem('access_token');
+  const adminToken = sessionStorage.getItem('admin_access_token');
+
   if (isAuthenticated()) {
-    config.headers['authorization'] = `Bearer ${sessionStorage.getItem('access_token')}`;
+    const token = isAdmin && adminToken ? adminToken : userToken;
+    if (token) config.headers['authorization'] = `Bearer ${token}`;
   }
 };
 
