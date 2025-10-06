@@ -19,9 +19,10 @@
           <img :src="baseURL + template.preview" :alt="template.name" class="template-image" />
           <div class="template-title">
             <span>{{ template.name }}</span>
-            <span v-if="template.isPaywalled" class="template-price">
+            <span v-if="template.isPaywalled && template.purchased !== true" class="template-price">
               {{ template.price.toLocaleString() }} تومان
             </span>
+            <span v-else-if="template.purchased === true" class="template-price">خرید شده</span>
             <span v-else class="template-free">رایگان</span>
           </div>
         </div>
@@ -91,7 +92,7 @@ const handleSubmit = async () => {
     isButtonLoading.value = true;
 
     // اگر تمپلیت پولی است، ابتدا خریداری می‌شود
-    if (selectedTemplate.value.isPaywalled) {
+    if (selectedTemplate.value.isPaywalled && selectedTemplate.value.purchased !== true) {
       try {
         await purchaseTemplate(selectedTemplate.value.id);
         notify({ message: 'تمپلیت با موفقیت خریداری شد', type: 'success' });
@@ -154,6 +155,7 @@ const mergedTemplates = computed(() => {
       price: Number(t.price || 0),
       is_free: t.is_free ?? true,
       isPaywalled: !(t.is_free ?? true) && Number(t.price || 0) > 0,
+      purchased: t.purchased ?? false,
     }));
 });
 
