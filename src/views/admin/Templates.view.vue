@@ -77,7 +77,7 @@ const getStatusColor = (isEnabled) => {
 
 onMounted(fetchTemplates);
 
-const baseURL = 'http://185.204.169.71:8000/';
+const baseURL = 'http://185.204.169.71:8000';
 </script>
 
 <template>

@@ -54,7 +54,7 @@ export const deleteTemplate = (templateId) => {
 export const toggleTemplateStatus = (templateId) => {
   return axios({
     baseURL,
-    method: 'PATCH',
+    method: 'PUT',
     url: `/admin/template/${templateId}/toggle-status`,
   });
 };
@@ -62,7 +62,7 @@ export const toggleTemplateStatus = (templateId) => {
 export const updateTemplateSortOrder = (templateId, sortOrder) => {
   return axios({
     baseURL,
-    method: 'PATCH',
+    method: 'PUT',
     url: `/admin/template/${templateId}/sort-order`,
     params: { sort_order: sortOrder },
   });
@@ -84,5 +84,14 @@ export const getTemplateOptions = () => {
     baseURL,
     method: 'GET',
     url: '/template/options',
+  });
+};
+
+export const purchaseTemplate = (templateId) => {
+  return axios({
+    baseURL,
+    method: 'POST',
+    url: '/template/purchase',
+    data: { template_id: templateId },
   });
 };

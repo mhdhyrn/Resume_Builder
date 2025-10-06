@@ -168,7 +168,7 @@ const submitButtonConfig = reactive({
 });
 
 const isLoading = ref(true);
-const baseURL = 'http://185.204.169.71:8000/';
+const baseURL = 'http://185.204.169.71:8000';
 
 // Helper function to get full image URL
 const getFullImageUrl = (path) => {

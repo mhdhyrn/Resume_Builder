@@ -92,7 +92,7 @@ export const deleteTemplate = (templateId) => {
 
 export const toggleTemplateStatus = (templateId) => {
   return axios({
-    method: 'PATCH',
+    method: 'PUT',
     baseURL,
     url: `/admin/template/${templateId}/toggle-status`,
   });
@@ -100,7 +100,7 @@ export const toggleTemplateStatus = (templateId) => {
 
 export const updateTemplateSortOrder = (templateId, sortOrder) => {
   return axios({
-    method: 'PATCH',
+    method: 'PUT',
     url: `/admin/template/${templateId}/sort-order`,
     params: { sort_order: sortOrder },
   });

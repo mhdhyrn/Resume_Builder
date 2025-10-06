@@ -62,7 +62,7 @@ import { downloadResume } from '@/services/api/resume.service';
 import { getPersonalInfo } from '@/services/api/personal-info.service';
 import { generateQRCode } from '@/services/api/qrcode.service';
 import QRCodeModal from '../QRCodeModal.component.vue';
-import { getTemplateOptions } from '@/services/api/template.service';
+import { getTemplateOptions, purchaseTemplate } from '@/services/api/template.service';
 import { getWalletBalance } from '@/services/api/wallet.service';
 import { notify } from '@/plugins/toast';
 
@@ -76,7 +76,7 @@ const isQRCodeModalOpen = ref(false);
 const qrCodeUrl = ref('');
 const profileUrl = ref('');
 
-const baseURL = 'http://185.204.169.71:8000/';
+const baseURL = 'http://185.204.169.71:8000';
 
 const submitButtonConfig = reactive({
   text: 'دانلود رزومه',
@@ -89,7 +89,22 @@ const handleSubmit = async () => {
 
   try {
     isButtonLoading.value = true;
-    const response = await downloadResume(selectedTemplate.value.id);
+
+    // اگر تمپلیت پولی است، ابتدا خریداری می‌شود
+    if (selectedTemplate.value.isPaywalled) {
+      try {
+        await purchaseTemplate(selectedTemplate.value.id);
+        notify({ message: 'تمپلیت با موفقیت خریداری شد', type: 'success' });
+        // به‌روزرسانی موجودی کیف پول
+        const balanceRes = await getWalletBalance();
+        userBalance.value = Number(balanceRes?.data ?? 0);
+      } catch (purchaseError) {
+        notify({ message: purchaseError?.message || 'خطا در خرید تمپلیت', type: 'error' });
+        return;
+      }
+    }
+
+    const response = await downloadResume(selectedTemplate.value.id, selectedTemplate.value.name);
 
     // ایجاد Blob از داده‌های دریافتی
     const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -110,7 +125,7 @@ const handleSubmit = async () => {
     isShareModalOpen.value = true;
   } catch (error) {
     console.error('خطا در دانلود رزومه:', error);
-    // اینجا می‌تونیم یک نوتیفیکیشن خطا نمایش بدیم
+    notify({ message: error?.message || 'خطا در دانلود رزومه', type: 'error' });
   } finally {
     isButtonLoading.value = false;
   }

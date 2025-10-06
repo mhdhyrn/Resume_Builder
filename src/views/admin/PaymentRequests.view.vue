@@ -54,7 +54,7 @@ const handleConfirm = async () => {
 
 onMounted(fetchData);
 
-const baseURL = 'http://185.204.169.71:8000/';
+const baseURL = 'http://185.204.169.71:8000';
 </script>
 
 <template>

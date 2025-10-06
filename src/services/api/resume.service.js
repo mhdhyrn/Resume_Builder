@@ -10,13 +10,14 @@ export const getResume = () => {
   });
 };
 
-export const downloadResume = (templateId) => {
+export const downloadResume = (templateId, templateName) => {
   return axios({
     method: 'GET',
     baseURL,
     url: `/pdf/generate`,
     params: {
-      template: templateId,
+      template_id: templateId,
+      template_name: templateName,
     },
     responseType: 'blob',
   });
