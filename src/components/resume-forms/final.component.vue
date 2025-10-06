@@ -12,7 +12,7 @@
           class="template-card"
           :class="{
             selected: selectedTemplate?.id === template.id,
-            disabled: template.isPaywalled && !hasEnoughBalance(template),
+            disabled: template.isPaywalled && !hasEnoughBalance(template) && template.purchased !== true,
           }"
           @click="onSelectTemplate(template)"
         >

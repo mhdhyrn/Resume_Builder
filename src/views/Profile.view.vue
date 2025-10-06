@@ -34,6 +34,8 @@ const fetchProfileData = async () => {
 onMounted(() => {
   fetchProfileData();
 });
+
+const baseURL = 'http://185.204.169.71:8000';
 </script>
 
 <template>
@@ -49,8 +51,7 @@ onMounted(() => {
       <div class="profile-header">
         <div class="profile-picture-container">
           <img
-            :src="
-              getServerUrl(profileData.user.profile_picture) ||
+            :src="profileData.user.profile_picture? baseURL + profileData.user.profile_picture :
               '/src/assets/images/default-avatar.png'
             "
             :alt="profileData.user.first_name"
