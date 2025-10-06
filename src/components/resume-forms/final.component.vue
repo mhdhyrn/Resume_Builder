@@ -138,7 +138,7 @@ const hasEnoughBalance = (template) => {
 };
 
 const onSelectTemplate = (template) => {
-  if (template.isPaywalled && !hasEnoughBalance(template)) {
+  if (template.isPaywalled && !hasEnoughBalance(template) && template.purchased !== true) {
     notify({ message: 'موجودی کیف پول برای این تمپلیت کافی نیست', type: 'error' });
     return;
   }
@@ -154,7 +154,7 @@ const mergedTemplates = computed(() => {
       preview: t.preview_path,
       price: Number(t.price || 0),
       is_free: t.is_free ?? true,
-      isPaywalled: !(t.is_free ?? true) && Number(t.price || 0) > 0,
+      isPaywalled: !(t.is_free ?? true),
       purchased: t.purchased ?? false,
     }));
 });
